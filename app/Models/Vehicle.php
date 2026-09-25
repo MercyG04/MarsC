@@ -84,9 +84,29 @@ class Vehicle extends Model
     {
         // Normalize registration number casing: "kda 123a" → "KDA 123A"
         static::saving(function (Vehicle $vehicle) {
-            $vehicle->registration_number = strtoupper(trim($vehicle->registration_number));
-            $vehicle->chassis_number      = strtoupper(trim($vehicle->chassis_number));
+        $vehicle->registration_number = strtoupper(trim($vehicle->registration_number));
+        $vehicle->chassis_number      = strtoupper(trim($vehicle->chassis_number));
+        $vehicle->logbook_number      = strtoupper(trim($vehicle->logbook_number));
         });
+
+
+        static::updating(function (Vehicle $vehicle) {
+    $protected = [
+        'registration_number',
+        'chassis_number',
+        'logbook_number',
+        'initial_estimated_value',
+    ];
+
+    foreach ($protected as $field) {
+        if ($vehicle->isDirty($field) && $vehicle->exists) {
+            throw new \RuntimeException("Field '{$field}' is immutable on a vehicle.");
+        }
     }
+    });
+    }
+
+    
+
 
 }

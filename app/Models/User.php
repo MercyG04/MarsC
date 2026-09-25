@@ -32,12 +32,37 @@ class User extends Authenticatable
         ];
     }
 
-    public function hasRole (UserRole $role): bool
-    {
-        return $this->role === $role;
-    }
+    
     public function valuations(): HasMany
-{
+    {
     return $this->hasMany(Valuation::class, 'created_by');
-}
+    }
+
+    
+
+    public function hasRole(UserRole ...$roles): bool
+    {
+    return in_array($this->role, $roles, true);
+    }
+
+    public function isAdmin(): bool
+    {
+    return $this->role === UserRole::Admin;
+    }
+
+    public function isAgent(): bool
+    {
+    return $this->role === UserRole::Agent;
+    }
+
+    public function isUnderwriter(): bool
+    {
+    return $this->role === UserRole::Underwriter;
+    }
+
+    public function isClaimsOfficer(): bool
+    {
+    return $this->role === UserRole::ClaimsOfficer;
+    }
+    
 }
