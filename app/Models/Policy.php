@@ -9,9 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 use App\Models\AddOn;
-use app\Enums\PolicyType;
-use app\Enums\PolicyStatus;
-use app\Enums\PaymentFrequency;
+use App\Models\User;
+use App\Enums\PolicyCancellationStatus;
+use App\Enums\PolicyType;
+use App\Enums\PolicyStatus;
+use App\Enums\PaymentFrequency;
 
 
 
@@ -33,14 +35,21 @@ use app\Enums\PaymentFrequency;
         'deductible_amount',
         'payment_frequency',
         'certificate_isssued_at',
-        'premium_balance',])]
+        'premium_balance',
+        'cancellation_status',
+        'cancellation_requested_at',
+        'cancellation_effective_at',
+        'certificate_surrendered_at',
+        'refund_amount',
+        'cancellation_reason',
+        'cancelled_by',])]
 class Policy extends Model
 {
     protected  function casts(): array 
        { return [
         'issued_at'             => 'date',
-        'start_date'            => 'date',
-        'end_date'              => 'date',
+        'start_date'            => 'immutable_date',
+        'end_date'              => 'immutable_date',
         'basic_premium'         => 'decimal:2',
         'training_levy'         => 'decimal:2',
         'phcf'                  => 'decimal:2',
@@ -54,6 +63,11 @@ class Policy extends Model
         'status'                => PolicyStatus::class,
         'payment_frequency'     => PaymentFrequency::class,
         'certificate_issued_at' => 'datetime',
+        'cancellation_status'        => PolicyCancellationStatus::class,
+        'cancellation_requested_at'  => 'datetime',
+        'cancellation_effective_at'  => 'datetime',
+        'certificate_surrendered_at' => 'datetime',
+        'refund_amount'              => 'decimal:2',
     ];
    } 
 
@@ -87,6 +101,10 @@ class Policy extends Model
     {
         return $this->premium_balance <= 0;
     }
+    public function cancelledBy(): BelongsTo
+    {
+    return $this->belongsTo(User::class, 'cancelled_by');
+    }
     
     public function getTotalAddOnsValueAttribute(): float
     {
@@ -102,6 +120,10 @@ class Policy extends Model
     return $this->belongsToMany(AddOn::class, 'policy_add_on')
                 ->withPivot('charged_amount')
                 ->withTimestamps();
+    }
+    public function endorsements(): HasMany
+    {
+    return $this->hasMany(Endorsement::class);
     }
     protected static function booted(): void
     {

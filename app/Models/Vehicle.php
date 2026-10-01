@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Valuation;
 
-use app\Enums\VehicleUse;
-use app\Enums\VehicleStatus;
+use App\Enums\VehicleUse;
+use App\Enums\VehicleStatus;
 
 
 #[Fillable (['client_id',

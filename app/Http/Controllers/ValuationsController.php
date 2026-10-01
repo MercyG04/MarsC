@@ -57,7 +57,7 @@ class ValuationsController extends Controller
     {
         $valuation = $vehicle->valuations()->create(
             $request->validated() + [
-                'created_by' => auth()->id(),
+                'created_by' => Auth::id(),
             ]
         );
 
