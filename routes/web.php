@@ -9,6 +9,7 @@ use App\Http\Controllers\AddOnController;
 use App\Http\Controllers\PolicyController;
 use App\Http\Controllers\PolicyCancellationController;
 use App\Http\Controllers\PolicyEndorsementController;
+use App\Http\Controllers\VehicleDriverController;
 
 
 
@@ -34,6 +35,17 @@ Route::middleware('auth')->group(function () {
         Route::post('vehicles',       [VehicleController::class, 'store'])->name('vehicles.store');
     });
     Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
+
+        Route::get('drivers/create', [VehicleDriverController::class, 'create'])->name('vehicles.drivers.create');
+        Route::post('drivers', [VehicleDriverController::class, 'store'])->name('vehicles.drivers.store');
+
+        // Show
+        Route::get('drivers/{driver}', [VehicleDriverController::class, 'show'])->name('vehicles.drivers.show');
+
+        // Update — only is_primary
+        Route::put('drivers/{driver}', [VehicleDriverController::class, 'update'])->name('vehicles.drivers.update');
+        Route::delete('drivers/{driver}', [VehicleDriverController::class, 'destroy'])->name('vehicles.drivers.destroy');
+   
 
     Route::get('valuations',              [ValuationsController::class, 'index'])->name('valuations.index');
     Route::get('vehicles/{vehicle}/valuations/create', [ValuationsController::class, 'create'])->name('valuations.create');

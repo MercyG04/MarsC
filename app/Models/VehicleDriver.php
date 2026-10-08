@@ -49,7 +49,30 @@ class VehicleDriver extends Model
      */
     public function hasPsvLicence(): bool
     {
-        return str_contains(strtoupper($this->dl_class), 'A');
+        return str_contains(strtoupper($this->dl_class), 'D');
     }
+     // app/Models/VehicleDriver.php
+
+protected static function booted(): void
+{
+    static::updating(function (VehicleDriver $driver) {
+        $protected = [
+            'name',
+            'national_id',
+            'dl_number',
+            'dl_class',
+            'date_of_birth',
+            'driving_experience',
+        ];
+
+        foreach ($protected as $field) {
+            if ($driver->isDirty($field)) {
+                throw new \RuntimeException(
+                    "Field '{$field}' is immutable on a vehicle driver."
+                );
+            }
+        }
+    });
+ }
 
 }

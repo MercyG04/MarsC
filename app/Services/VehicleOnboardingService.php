@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\Vehicle;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Enums\VehicleUse;
 
 class VehicleOnboardingService
 {
@@ -40,8 +41,9 @@ class VehicleOnboardingService
             ]);
 
             $this->verifyWithNtsa($vehicle);
+            $this->autoCreateOwnerAsDriver($vehicle);
 
-            return $vehicle->fresh();
+           return $vehicle->fresh(['drivers']);
         });
     }
 
@@ -81,4 +83,24 @@ class VehicleOnboardingService
         ]);
     }
     }
+
+    protected function autoCreateOwnerAsDriver(Vehicle $vehicle): void
+{
+    // Only for Personal use
+    if ($vehicle->vehicle_use !== VehicleUse::Personal) {
+        return;
+    }
+
+    $client = $vehicle->client;
+
+    $vehicle->drivers()->create([
+        'name'                => "{$client->first_name} {$client->last_name}",
+        'national_id'         => $client->national_id,
+        'dl_number'           => 'PENDING',      // TODO: query NTSA for the owner's DL
+        'dl_class'            => 'B',            // Personal cars use class B
+        'date_of_birth'       => $client->date_of_birth,
+        'driving_experience'  => $client->driving_experience,
+        'is_primary'          => true,
+    ]);
+}
 }

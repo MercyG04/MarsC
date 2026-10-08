@@ -215,6 +215,70 @@
                 Add Another Vehicle
             </a>
         </div>
+        {{-- ─── Authorized Drivers ─── --}}
+        <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <h2 class="text-sm font-semibold text-green-800">
+                    Authorized Drivers
+                    <span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-semibold">
+                        {{ $vehicle->drivers->count() }}
+                    </span>
+                </h2>
+                <a href="{{ route('vehicles.drivers.create', $vehicle) }}"
+                    class="text-xs px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium">
+                    + Add Driver
+                </a>
+            </div>
+
+            @if ($vehicle->drivers->isEmpty())
+                <div class="px-5 py-8 text-center text-sm text-gray-400">
+                    No drivers on record.
+                    @if ($vehicle->vehicle_use === \App\Enums\VehicleUse::Personal)
+                        The vehicle owner will be added as the primary driver on onboarding.
+                    @else
+                        Add the first driver to authorize them on this vehicle.
+                    @endif
+                </div>
+            @else
+                <ul class="divide-y divide-gray-100">
+                    @foreach ($vehicle->drivers as $driver)
+                        <li class="px-5 py-3 flex items-center justify-between hover:bg-lilac-50/40 transition">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('vehicles.drivers.show', [$vehicle, $driver]) }}"
+                                        class="font-medium text-green-700 hover:text-green-900">
+                                        {{ $driver->name }}
+                                    </a>
+                                    @if ($driver->is_primary)
+                                        <span class="text-xs px-2 py-0.5 rounded-full bg-lime-100 text-lime-800 font-semibold">
+                                            Primary
+                                        </span>
+                                    @endif
+                                    @if ($driver->isYoungDriver())
+                                        <span class="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800">
+                                            Under 25
+                                        </span>
+                                    @endif
+                                    @if ($driver->hasPsvLicence())
+                                        <span class="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
+                                            PSV
+                                        </span>
+                                    @endif
+                                </div>
+                                <p class="text-xs text-gray-500 mt-0.5">
+                                    DL {{ $driver->dl_number }} · Class {{ $driver->dl_class }} ·
+                                    {{ $driver->driving_experience }} yrs experience
+                                </p>
+                            </div>
+                            <a href="{{ route('vehicles.drivers.show', [$vehicle, $driver]) }}"
+                                class="text-xs text-green-700 hover:text-green-900 font-medium">
+                                View →
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
 
     </div>
 @endsection

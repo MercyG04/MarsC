@@ -26,6 +26,7 @@ class Endorsement extends Model
             'additional_premium' => 'decimal:2',
             'refund_premium'     => 'decimal:2',
             'effective_date'     => 'date',
+            'endorsement_type'   => \App\Enums\EndorsementType::class,
         ];
     }
 

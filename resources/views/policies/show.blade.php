@@ -56,7 +56,7 @@
             </div>
         @endif
 
-        {{-- ─── Cancellation alert (if pending) ─── --}}
+        {{-- ─── Cancellation alert (if pending certificate surrender) ─── --}}
         @if ($policy->cancellation_status === \App\Enums\PolicyCancellationStatus::CertificatePending)
             <div class="mb-4 rounded-lg bg-yellow-50 border border-yellow-200 p-4">
                 <strong class="block text-yellow-900 mb-1">Cancellation pending certificate surrender</strong>
@@ -65,19 +65,22 @@
                     within 7 days. Failure to do so is a statutory offence under the Insurance
                     (Motor Vehicle Third Party Risks) Act.
                 </p>
-                <form method="POST" action="{{ route('policies.certificate.surrendered', $policy) }}">
-                    @csrf
-                    <button type="submit" onclick="return confirm('Confirm the certificates have been received?')"
-                        class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium shadow-sm">
-                        Mark Certificate Surrendered
-                    </button>
-                </form>
+                @if (auth()->user()->isAdmin())
+                    <form method="POST" action="{{ route('policies.certificate.surrendered', $policy) }}">
+                        @csrf
+                        <button type="submit" onclick="return confirm('Confirm the certificates have been received?')"
+                            class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium shadow-sm">
+                            Mark Certificate Surrendered
+                        </button>
+                    </form>
+                @endif
             </div>
         @endif
 
-        {{-- ─── Top cards — Vehicle and Client ─── --}}
+        {{-- ─── Vehicle and Client cards ─── --}}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
+            {{-- Insured Vehicle --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide">Insured Vehicle</h2>
@@ -108,6 +111,7 @@
                 </dl>
             </div>
 
+            {{-- Policy Holder --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide">Policy Holder</h2>
@@ -192,9 +196,9 @@
                 <div class="flex justify-between">
                     <dt class="text-gray-600">Premium Balance</dt>
                     <dd class="font-semibold
-                                @if($policy->premium_balance > 0) text-yellow-700
-                                @else text-green-700
-                                @endif">
+                        @if($policy->premium_balance > 0) text-yellow-700
+                        @else text-green-700
+                        @endif">
                         KES {{ number_format($policy->premium_balance, 2) }}
                         @if ($policy->premium_balance <= 0)
                             <span class="text-xs font-normal">(Fully paid)</span>
@@ -234,7 +238,7 @@
                     <tbody class="divide-y divide-gray-100">
                         @foreach ($policy->endorsements as $endorsement)
                             <tr class="hover:bg-lilac-50/40 transition">
-                                <td class="px-5 py-3 font-mono text-xs text-gray-700">
+                                <td class="px-5 py-3 font-mono text-xs">
                                     <a href="{{ route('policies.endorsements.show', [$policy, $endorsement]) }}"
                                         class="text-purple-700 hover:text-purple-900 font-medium">
                                         {{ $endorsement->endorsement_number }}
@@ -244,7 +248,7 @@
                                     {{ $endorsement->effective_date->format('d M Y') }}
                                 </td>
                                 <td class="px-5 py-3 text-gray-700">
-                                    {{ str_replace('_', ' ', $endorsement->endorsement_type) }}
+                                    {{ $endorsement->endorsement_type->label() }}
                                 </td>
                                 <td class="px-5 py-3 text-right text-gray-800">
                                     {{ $endorsement->additional_premium > 0 ? number_format($endorsement->additional_premium, 2) : '—' }}
@@ -252,7 +256,6 @@
                                 <td class="px-5 py-3 text-right text-gray-800">
                                     {{ $endorsement->refund_premium > 0 ? number_format($endorsement->refund_premium, 2) : '—' }}
                                 </td>
-
                             </tr>
                         @endforeach
                     </tbody>
@@ -260,7 +263,7 @@
             </div>
         @endif
 
-        {{-- ─── Cancellation details (if cancelled) ─── --}}
+        {{-- ─── Cancellation details ─── --}}
         @if ($policy->cancellation_status)
             <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                 <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide mb-4">
@@ -309,9 +312,13 @@
             </div>
         @endif
 
-        {{-- ─── Action buttons ─── --}}
-        <div class="mt-6 flex flex-wrap gap-3">
-            @if ($policy->status === \App\Enums\PolicyStatus::Active && $policy->cancellation_status === null)
+        {{-- ─── Admin action buttons ─── --}}
+        @if (
+                auth()->user()->isAdmin()
+                && $policy->status === \App\Enums\PolicyStatus::Active
+                && $policy->cancellation_status === null
+            )
+            <div class="mt-6 flex flex-wrap gap-3">
                 <a href="{{ route('policies.endorse', $policy) }}"
                     class="px-5 py-2 rounded-lg border border-green-400 text-green-700 hover:bg-green-50 text-sm font-medium shadow-sm">
                     Endorse Policy
@@ -320,8 +327,8 @@
                     class="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium shadow-sm">
                     Cancel Policy
                 </a>
-            @endif
-        </div>
+            </div>
+        @endif
 
     </div>
 @endsection

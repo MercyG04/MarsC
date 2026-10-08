@@ -51,9 +51,9 @@ class VerificationService
      */
     public function verifyDriver(string $dlNumber): ?array
     {
-        return $this->call('ntsa', [
-            'dl_number' => strtoupper(trim($dlNumber)),
-        ]);
+    return $this->call('ntsa_driver', [
+        'dl_number' => strtoupper(trim($dlNumber)),
+    ]);
     }
 
     /**

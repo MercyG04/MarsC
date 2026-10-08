@@ -43,7 +43,7 @@ class ClientKycService
 
         // 2. NTSA lookup using driving licence number (if provided)
         if (! empty($data['dl_number'])) {
-            $ntsa = $this->verification->verifyNtsa($data['dl_number']);
+            $ntsa = $this->verification->verifyDriver($data['dl_number']);
 
             if ($ntsa && isset($ntsa['driving_experience'])) {
                 $data['driving_experience'] = (int) $ntsa['driving_experience'];
