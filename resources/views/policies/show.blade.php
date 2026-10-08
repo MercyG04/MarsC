@@ -192,9 +192,9 @@
                 <div class="flex justify-between">
                     <dt class="text-gray-600">Premium Balance</dt>
                     <dd class="font-semibold
-                        @if($policy->premium_balance > 0) text-yellow-700
-                        @else text-green-700
-                        @endif">
+                                @if($policy->premium_balance > 0) text-yellow-700
+                                @else text-green-700
+                                @endif">
                         KES {{ number_format($policy->premium_balance, 2) }}
                         @if ($policy->premium_balance <= 0)
                             <span class="text-xs font-normal">(Fully paid)</span>
@@ -235,7 +235,10 @@
                         @foreach ($policy->endorsements as $endorsement)
                             <tr class="hover:bg-lilac-50/40 transition">
                                 <td class="px-5 py-3 font-mono text-xs text-gray-700">
-                                    {{ $endorsement->endorsement_number }}
+                                    <a href="{{ route('policies.endorsements.show', [$policy, $endorsement]) }}"
+                                        class="text-purple-700 hover:text-purple-900 font-medium">
+                                        {{ $endorsement->endorsement_number }}
+                                    </a>
                                 </td>
                                 <td class="px-5 py-3 text-gray-700">
                                     {{ $endorsement->effective_date->format('d M Y') }}
@@ -249,6 +252,7 @@
                                 <td class="px-5 py-3 text-right text-gray-800">
                                     {{ $endorsement->refund_premium > 0 ? number_format($endorsement->refund_premium, 2) : '—' }}
                                 </td>
+
                             </tr>
                         @endforeach
                     </tbody>

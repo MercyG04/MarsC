@@ -8,6 +8,8 @@ use App\Http\Controllers\ValuationsController;
 use App\Http\Controllers\AddOnController;
 use App\Http\Controllers\PolicyController;
 use App\Http\Controllers\PolicyCancellationController;
+use App\Http\Controllers\PolicyEndorsementController;
+
 
 
 Route::get('/', function () {
@@ -52,6 +54,11 @@ Route::middleware('auth')->group(function () {
     Route::get('vehicles/{vehicle}/policies/create', [PolicyController::class, 'create'])->name('policies.create');
     Route::post('vehicles/{vehicle}/policies', [PolicyController::class, 'store'])->name('policies.store');
     Route::get('policies/{policy}', [PolicyController::class, 'show'])->name('policies.show');
+
+    Route::get('policies/{policy}/endorse',  [PolicyEndorsementController::class, 'create'])->name('policies.endorse');
+    Route::post('policies/{policy}/endorse', [PolicyEndorsementController::class, 'store'])->name('policies.endorse.store');
+    Route::get('policies/{policy}/endorsements/{endorsement}',   [PolicyEndorsementController::class, 'show']
+)->name('policies.endorsements.show');
 });
 
 require __DIR__.'/auth.php';

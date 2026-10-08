@@ -21,18 +21,23 @@
             An endorsement is a formal addendum to an active policy. Only the changes you make here
             are applied. The pro-rata additional premium is calculated for the remaining days
             of the policy term.
-        </div>
+        </div>--}}
 
         @if ($errors->any())
-        <div class="mb-4 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-900 text-sm">
-            <strong>Please fix the following:</strong>
-            <ul class="list-disc list-inside mt-1">
-                @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif --}}
+            <div class="mb-4 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-900 text-sm">
+                <strong>Please fix the following:</strong>
+                <ul class="list-disc list-inside mt-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        @if ($errors->has('endorsement'))
+            <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
+                {{ $errors->first('endorsement') }}
+            </div>
+        @endif
 
         <form method="POST" action="{{ route('policies.endorse.store', $policy) }}"
             class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-6">
@@ -51,8 +56,8 @@
                             <input type="radio" name="policy_type" value="{{ $type->value }}" @checked(old('policy_type', $policy->policy_type->value) === $type->value) class="peer sr-only">
 
                             <div class="p-4 rounded-lg border-2 border-gray-200
-                                                    peer-checked:border-green-500 peer-checked:bg-lime-50
-                                                    hover:border-green-300 transition">
+                                                                    peer-checked:border-green-500 peer-checked:bg-lime-50
+                                                                    hover:border-green-300 transition">
 
                                 <p class="font-semibold text-gray-800">{{ $type->label() }}</p>
                                 <p class="text-xs text-gray-500 mt-1">{{ $type->description() }}</p>
@@ -84,8 +89,9 @@
                 @else
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         @foreach ($addOns as $addOn)
-                            <label class="flex items-start gap-3 p-3 rounded-lg border-2 border-gray-200
-                                                              hover:border-green-300 cursor-pointer transition">
+                            <label
+                                class="flex items-start gap-3 p-3 rounded-lg border-2 border-gray-200
+                                                                                      hover:border-green-300 cursor-pointer transition">
                                 <input type="checkbox" name="add_on_ids[]" value="{{ $addOn->id }}" @checked(in_array($addOn->id, old('add_on_ids', $currentAddOnIds)))
                                     class="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500">
 
@@ -104,6 +110,49 @@
                                     @if (in_array($addOn->id, $currentAddOnIds))
                                         <p class="text-xs text-green-700 mt-1">Currently on this policy</p>
                                     @endif
+                                </div>
+                            </label>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+            {{-- ─── Change 3 — Named Drivers ─── --}}
+            <div>
+                <h2 class="text-sm font-semibold text-green-800 mb-3">3. Adjust Named Drivers</h2>
+                <p class="text-xs text-gray-500 mb-3">
+                    Check new drivers, uncheck ones you no longer authorize. The primary driver cannot be removed.
+                </p>
+
+                @php
+                    $currentDriverIds = $policy->vehicle->drivers->pluck('id')->toArray();
+                @endphp
+
+                @if ($policy->vehicle->drivers->isEmpty())
+                    <p class="text-sm text-gray-400">
+                        No drivers on record.
+                        <a href="#" class="text-green-700 font-medium">Add drivers to the vehicle →</a>
+                    </p>
+                @else
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        @foreach ($policy->vehicle->drivers as $driver)
+                            <label class="flex items-start gap-3 p-3 rounded-lg border-2 border-gray-200
+                                                      hover:border-green-300 cursor-pointer transition">
+                                <input type="checkbox" name="driver_ids[]" value="{{ $driver->id }}" @checked(in_array($driver->id, old('driver_ids', $currentDriverIds)))
+                                    class="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500">
+
+                                <div class="flex-1">
+                                    <p class="font-medium text-gray-800">
+                                        {{ $driver->name }}
+                                        @if ($driver->is_primary)
+                                            <span class="text-xs px-1.5 py-0.5 rounded bg-lime-100 text-lime-800 ml-1">
+                                                Primary
+                                            </span>
+                                        @endif
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        DL {{ $driver->dl_number }} · Class {{ $driver->dl_class }} ·
+                                        {{ $driver->age }} yrs old
+                                    </p>
                                 </div>
                             </label>
                         @endforeach

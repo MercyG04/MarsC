@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
+use App\Models\VehicleDriver;
 use App\Models\Valuation;
 
 use App\Enums\VehicleUse;
@@ -78,6 +80,15 @@ class Vehicle extends Model
     public function getAgeAttribute(): int
     {
         return now()->year - $this->year_of_manufacture;
+    }
+    public function drivers(): HasMany
+    {
+    return $this->hasMany(VehicleDriver::class);
+    }
+
+    public function primaryDriver(): ?VehicleDriver
+    {
+    return $this->drivers()->where('is_primary', true)->first();
     }
 
     protected static function booted(): void

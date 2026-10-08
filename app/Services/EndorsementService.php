@@ -6,6 +6,7 @@ use App\Enums\EndorsementType;
 use App\Enums\PolicyStatus;
 use App\Models\Endorsement;
 use App\Models\Policy;
+use App\Models\Vehicle;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -89,22 +90,23 @@ class EndorsementService
      * Apply the new terms to the policy and adjust the premium balance.
      */
     protected function applyChanges(
-        Policy $policy,
-        array $changes,
-        array $newBreakdown,
-        float $adjustment,
-    ): void {
-        $policy->update([
-            'policy_type'     => $changes['policy_type'] ?? $policy->policy_type,
-            'basic_premium'   => $newBreakdown['basic_premium'],
-            'training_levy'   => $newBreakdown['training_levy'],
-            'phcf'            => $newBreakdown['phcf'],
-            'stamp_duty'      => $newBreakdown['stamp_duty'],
-            'gross_premium'   => $newBreakdown['gross_premium'],
-            'sum_insured'     => $newBreakdown['sum_insured'],
-            'deductible_amount' => $newBreakdown['deductible_amount'],
-            'premium_balance' => round((float) $policy->premium_balance + $adjustment, 2),
-        ]);
+    Policy $policy,
+    array $changes,
+    array $newBreakdown,
+    float $adjustment,
+): void {
+    $policy->update([
+        'policy_type'       => $changes['policy_type'] ?? $policy->policy_type,
+        'basic_premium'     => $newBreakdown['basic_premium'],
+        'training_levy'     => $newBreakdown['training_levy'],
+        'phcf'              => $newBreakdown['phcf'],
+        'stamp_duty'        => $newBreakdown['stamp_duty'],
+        'gross_premium'     => $newBreakdown['gross_premium'],
+        'sum_insured'       => $newBreakdown['sum_insured'],
+        'deductible_amount' => $newBreakdown['deductible_amount'],
+        'premium_balance'   => round((float) $policy->premium_balance + $adjustment, 2),
+    ]);
+
 
         // If add-ons changed, sync them
         if (array_key_exists('add_on_ids', $changes)) {
@@ -116,7 +118,28 @@ class EndorsementService
 
             $policy->addOns()->sync($pivot);
         }
+        if (array_key_exists('driver_ids', $changes)) {
+        $this->syncDrivers($policy->vehicle, $changes['driver_ids']);
     }
+    }
+protected function syncDrivers(Vehicle $vehicle, array $driverIds): void
+    {
+    // Soft-delete drivers not in the new list
+    $vehicle->drivers()
+        ->whereNotIn('id', $driverIds)
+        ->get()
+        ->each(fn ($driver) => $driver->delete());
+
+    // Restore (or activate) drivers that are in the new list but were soft-deleted
+    $vehicle->drivers()
+        ->withTrashed()
+        ->whereIn('id', $driverIds)
+        ->whereNotNull('deleted_at')
+        ->get()
+        ->each(fn ($driver) => $driver->restore());
+    }
+    
+    
 
     /**
      * Describe the change as a JSON-friendly diff.
@@ -151,13 +174,27 @@ class EndorsementService
             && $changes['policy_type'] !== $policy->policy_type;
 
         $addOnsChanged = array_key_exists('add_on_ids', $changes);
+        $driversChanged = array_key_exists('driver_ids', $changes);
+
+        if ($policyTypeChanged) {
+        return EndorsementType::PolicyTypeChange;
+        }
+        if ($addOnsChanged && $driversChanged) {
+        // Both changed — but we want the more specific one.
+        // If only drivers were added/removed (not a bulk change), prefer driver type.
+        return $this->classifyDriverOrAddOnChange($policy, $changes);
+    }
 
         if ($policyTypeChanged && $addOnsChanged) {
             return EndorsementType::AddOnsChanged;
         }
 
-        if ($policyTypeChanged) {
-            return EndorsementType::PolicyTypeChange;
+        if ($addOnsChanged) {
+        return $this->classifyAddOnChange($policy, $changes);
+        }
+
+        if ($driversChanged) {
+        return $this->classifyDriverChange($policy, $changes);
         }
 
         if ($addOnsChanged) {
@@ -177,6 +214,59 @@ class EndorsementService
 
         return EndorsementType::Correction;
     }
+    /**
+    * Distinguish between AddOnAdded, AddOnRemoved, or AddOnsChanged.
+    */
+    protected function classifyAddOnChange(Policy $policy, array $changes): EndorsementType
+    {
+    $old = $policy->addOns->pluck('id')->toArray();
+    $new = $changes['add_on_ids'] ?? [];
+
+    $added   = array_diff($new, $old);
+    $removed = array_diff($old, $new);
+
+    if (! empty($added) && empty($removed)) {
+        return EndorsementType::AddOnAdded;
+    }
+
+    if (! empty($removed) && empty($added)) {
+        return EndorsementType::AddOnRemoved;
+    }
+
+    return EndorsementType::AddOnsChanged;
+    }
+    /**
+ * Distinguish between DriverAdded, DriverRemoved, or a mixed change.
+ */
+protected function classifyDriverChange(Policy $policy, array $changes): EndorsementType
+{
+    $old = $policy->vehicle->drivers->pluck('id')->toArray();
+    $new = $changes['driver_ids'] ?? [];
+
+    $added   = array_diff($new, $old);
+    $removed = array_diff($old, $new);
+
+    if (! empty($added) && empty($removed)) {
+        return EndorsementType::DriverAdded;
+    }
+
+    if (! empty($removed) && empty($added)) {
+        return EndorsementType::DriverRemoved;
+    }
+    // Mixed change — fall back to the broader case.
+    // TODO: add a `DriversChanged` enum case later.
+    return EndorsementType::DriverAdded;
+ }
+ protected function classifyDriverOrAddOnChange(Policy $policy, array $changes): EndorsementType
+{
+    $addOnType   = $this->classifyAddOnChange($policy, $changes);
+    $driverType  = $this->classifyDriverChange($policy, $changes);
+
+    // Prefer driver classification — it's the more specific signal.
+    return $driverType;
+ }
+
+
 
     /**
      * Generate the next endorsement number for the current year.
