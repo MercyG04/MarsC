@@ -52,6 +52,16 @@ Route::middleware('auth')->group(function () {
     Route::post('vehicles/{vehicle}/valuations',        [ValuationsController::class, 'store'])->name('valuations.store');
     Route::get('valuations/{valuation}',  [ValuationsController::class, 'show'])->name('valuations.show');
 
+    
+    // Quotes
+    //Route::get('quotes', [QuoteController::class, 'index'])->name('quotes.index');
+    //Route::get('quotes/create', [QuoteController::class, 'create'])->name('quotes.create');
+    //Route::post('quotes', [QuoteController::class, 'store'])->name('quotes.store');
+    //Route::get('quotes/{quote}', [QuoteController::class, 'show'])->name('quotes.show');
+
+    // Status transitions (POST because they change state)
+    //Route::post('quotes/{quote}/send', [QuoteController::class, 'markSent'])->name('quotes.mark-sent');
+    //Route::post('quotes/{quote}/decline', [QuoteController::class, 'markDeclined'])->name('quotes.mark-declined');
 
     Route::resource('add-ons', AddOnController::class);
     //Route::middleware(['auth', 'role:admin'])->group(function () {

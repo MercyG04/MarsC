@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\AddOnRateType;
 use App\Enums\PolicyType;
+use App\Enums\VehicleUse;
 use App\Models\AddOn;
 use App\Models\Vehicle;
 
@@ -46,50 +47,83 @@ class PremiumCalculator
         $acv  = (float) $vehicle->currentValue();
         $use  = $vehicle->vehicle_use;
 
-        // 1. Basic premium per pricing model
-        $basicPremium = match ($type->pricingModel()) {
-            'rate_based'  => $this->rateBasedPremium($acv, $type),
-            'fixed_floor' => $this->fixedFloorPremium($type),
-            'hybrid'      => $this->hybridPremium($acv, $type),
-        };
+        return $this->calculateFromInputs($acv, $use, $type, $addOnIds);
 
-        // 2. Apply floor if applicable
-        if ($type->minimumPremium() !== null && $basicPremium < $type->minimumPremium()) {
-            $basicPremium = $type->minimumPremium();
-        }
+        
+        
+    }
+    /**
+ * Calculate a premium for a quote — where the vehicle is a raw array,
+ * not a persisted Vehicle model.
+ *
+ * @param  array  $vehicleDetails  Expected keys: estimated_value, vehicle_use
+ * @param  PolicyType $type
+ * @param  array<int> $addOnIds
+ * @return array
+ */
+public function calculateForQuote(array $vehicleDetails, PolicyType $type, array $addOnIds = []): array
+{
+    // Extract the two things the calculator needs
+    $acv = (float) ($vehicleDetails['estimated_value'] ?? 0);
+    $use = VehicleUse::from($vehicleDetails['vehicle_use'] ?? 'personal');
 
-        // 3. Apply vehicle use risk multiplier
-        $basicPremium = round($basicPremium * $use->riskMultiplier(), 2);
+    return $this->calculateFromInputs($acv, $use, $type, $addOnIds);
+}
 
-        // 4. Statutory levies (calculated from the risk-loaded basic premium)
-        $trainingLevy = round($basicPremium * self::TRAINING_LEVY_RATE, 2);
-        $phcf         = round($basicPremium * self::PHCF_RATE, 2);
-        $stampDuty    = self::STAMP_DUTY;
+/**
+ * The shared internal calculation — takes raw primitives.
+ * Both calculate() and calculateForQuote() delegate to this.
+ */
+protected function calculateFromInputs(
+    float $acv,
+    VehicleUse $use,
+    PolicyType $type,
+    array $addOnIds = [],
+): array {
+    // 1. Basic premium per pricing model
+    $basicPremium = match ($type->pricingModel()) {
+        'rate_based'  => $this->rateBasedPremium($acv, $type),
+        'fixed_floor' => $this->fixedFloorPremium($type),
+        'hybrid'      => $this->hybridPremium($acv, $type),
+    };
 
-        // 5. Add-ons (no risk multiplier)
-        $addOnsBreakdown = $this->calculateAddOns($acv, $addOnIds);
-        $addOnsTotal     = round(array_sum(array_column($addOnsBreakdown, 'charged_amount')), 2);
+    // 2. Apply floor if applicable
+    if ($type->minimumPremium() !== null && $basicPremium < $type->minimumPremium()) {
+        $basicPremium = $type->minimumPremium();
+    }
 
-        // 6. Gross premium
-        $grossPremium = round(
-            $basicPremium + $trainingLevy + $phcf + $stampDuty + $addOnsTotal,
-            2
-        );
+    // 3. Apply vehicle use risk multiplier
+    $basicPremium = round($basicPremium * $use->riskMultiplier(), 2);
 
-        // 7. Deductible (stored on policy, not part of premium)
-        $deductible = $this->calculateDeductible($acv);
+    // 4. Statutory levies
+    $trainingLevy = round($basicPremium * self::TRAINING_LEVY_RATE, 2);
+    $phcf         = round($basicPremium * self::PHCF_RATE, 2);
+    $stampDuty    = self::STAMP_DUTY;
 
-        return [
-            'basic_premium'     => $basicPremium,
-            'training_levy'     => $trainingLevy,
-            'phcf'              => $phcf,
-            'stamp_duty'        => $stampDuty,
-            'add_ons'           => $addOnsBreakdown,
-            'add_ons_total'     => $addOnsTotal,
-            'gross_premium'     => $grossPremium,
-            'sum_insured'       => $acv,
-            'deductible_amount' => $deductible,
-        ];
+    // 5. Add-ons
+    $addOnsBreakdown = $this->calculateAddOns($acv, $addOnIds);
+    $addOnsTotal     = round(array_sum(array_column($addOnsBreakdown, 'charged_amount')), 2);
+
+    // 6. Gross premium
+    $grossPremium = round(
+        $basicPremium + $trainingLevy + $phcf + $stampDuty + $addOnsTotal,
+        2
+    );
+
+    // 7. Deductible
+    $deductible = $this->calculateDeductible($acv);
+
+    return [
+        'basic_premium'     => $basicPremium,
+        'training_levy'     => $trainingLevy,
+        'phcf'              => $phcf,
+        'stamp_duty'        => $stampDuty,
+        'add_ons'           => $addOnsBreakdown,
+        'add_ons_total'     => $addOnsTotal,
+        'gross_premium'     => $grossPremium,
+        'sum_insured'       => $acv,
+        'deductible_amount' => $deductible,
+    ];
     }
 
     /* ─────────────────────────────────────────────────────

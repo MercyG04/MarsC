@@ -14,8 +14,7 @@ use App\Enums\PolicyCancellationStatus;
 use App\Enums\PolicyType;
 use App\Enums\PolicyStatus;
 use App\Enums\PaymentFrequency;
-
-
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['policy_number',
         'customer_id',
@@ -42,7 +41,8 @@ use App\Enums\PaymentFrequency;
         'certificate_surrendered_at',
         'refund_amount',
         'cancellation_reason',
-        'cancelled_by',])]
+        'cancelled_by',
+        'quote_id',])]
 class Policy extends Model
 {
     protected  function casts(): array 
@@ -85,6 +85,10 @@ class Policy extends Model
     //{
         //return $this->hasMany(Claim::class);
     //}
+    public function quote (): belongsTo
+    {
+        return $this ->belongsTo(Quote::class);
+    }
     
     public function getIsActiveAttribute(): bool
     {

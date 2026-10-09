@@ -12,14 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('policies', function (Blueprint $table) {
-             $table->string('cancellation_status')->nullable()->after('status');
-    $table->timestamp('cancellation_requested_at')->nullable()->after('cancellation_status');
-    $table->timestamp('cancellation_effective_at')->nullable()->after('cancellation_requested_at');
-    $table->timestamp('certificate_surrendered_at')->nullable()->after('cancellation_effective_at');
-    $table->decimal('refund_amount', 12, 2)->nullable()->after('certificate_surrendered_at');
-    $table->text('cancellation_reason')->nullable()->after('refund_amount');
-    $table->foreignId('cancelled_by')->nullable()->after('cancellation_reason')
+         $table->string('cancellation_status')->nullable()->after('status');
+         $table->timestamp('cancellation_requested_at')->nullable()->after('cancellation_status');
+         $table->timestamp('cancellation_effective_at')->nullable()->after('cancellation_requested_at');
+         $table->timestamp('certificate_surrendered_at')->nullable()->after('cancellation_effective_at');
+         $table->decimal('refund_amount', 12, 2)->nullable()->after('certificate_surrendered_at');
+         $table->text('cancellation_reason')->nullable()->after('refund_amount');
+        $table->foreignId('cancelled_by')->nullable()->after('cancellation_reason')
           ->constrained('users')->nullOnDelete();
+
+        $table->foreignId('quote_id')->nullable()->after('client_id')
+          ->constrained('quotes')->nullOnDelete();  
+
+           $table->index('quote_id');
         });
     }
 
@@ -39,6 +44,7 @@ return new class extends Migration
                 'refund_amount',
                 'cancellation_reason',
                 'cancelled_by',
+                'quote_id',
             ]);
         });
     }

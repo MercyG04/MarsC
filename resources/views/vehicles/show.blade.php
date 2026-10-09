@@ -189,15 +189,19 @@
 
         {{-- ─── Action Buttons ─── --}}
         <div class="mt-6 flex flex-wrap gap-3">
-            @if ($vehicle->status === \App\Enums\VehicleStatus::PendingValuation)
+            @if (
+                    $vehicle->status === \App\Enums\VehicleStatus::PendingValuation
+                    && auth()->user()->hasRole(\App\Enums\UserRole::Underwriter, \App\Enums\UserRole::Admin)
+                )
                 <a href="{{ route('valuations.create', $vehicle) }}"
                     class="px-5 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium shadow-sm">
                     Record Valuation
                 </a>
             @endif
 
+
             @if ($vehicle->status === \App\Enums\VehicleStatus::Valued)
-                <a href="" {{ route('policies.create', $vehicle) }}
+                <a href=" {{ route('policies.create', $vehicle) }}"
                     class="px-5 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium shadow-sm">
                     Issue Policy
                 </a>
