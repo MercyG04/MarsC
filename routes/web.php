@@ -7,6 +7,7 @@ use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\ValuationsController;
 use App\Http\Controllers\AddOnController;
 use App\Http\Controllers\PolicyController;
+use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\PolicyCancellationController;
 use App\Http\Controllers\PolicyEndorsementController;
 use App\Http\Controllers\VehicleDriverController;
@@ -53,15 +54,15 @@ Route::middleware('auth')->group(function () {
     Route::get('valuations/{valuation}',  [ValuationsController::class, 'show'])->name('valuations.show');
 
     
-    // Quotes
-    //Route::get('quotes', [QuoteController::class, 'index'])->name('quotes.index');
-    //Route::get('quotes/create', [QuoteController::class, 'create'])->name('quotes.create');
-    //Route::post('quotes', [QuoteController::class, 'store'])->name('quotes.store');
-    //Route::get('quotes/{quote}', [QuoteController::class, 'show'])->name('quotes.show');
+    // Quotation
+    Route::get('Quotation', [QuotationController::class, 'index'])->name('quotations.index');
+    Route::get('Quotation/create', [QuotationController::class, 'create'])->name('quotations.create');
+    Route::post('Quotation', [QuotationController::class, 'store'])->name('quotations.store');
+    Route::get('Quotation/{quotation}', [QuotationController::class, 'show'])->name('quotations.show');
 
     // Status transitions (POST because they change state)
-    //Route::post('quotes/{quote}/send', [QuoteController::class, 'markSent'])->name('quotes.mark-sent');
-    //Route::post('quotes/{quote}/decline', [QuoteController::class, 'markDeclined'])->name('quotes.mark-declined');
+    Route::post('Quotation/{quotation}/send', [QuotationController::class, 'markSent'])->name('quotations.mark-sent');
+    Route::post('Quotation/{quotation}/decline', [QuotationController::class, 'markDeclined'])->name('quotations.mark-declined');
 
     Route::resource('add-ons', AddOnController::class);
     //Route::middleware(['auth', 'role:admin'])->group(function () {
