@@ -70,10 +70,10 @@ class QuotationController extends Controller
             ->route('quotations.show', $quote)
             ->with('success', "Quote {$quote->quote_number} created. You can now mark it as sent.");
     }
-    public function show(Quotation $quotation): View
+    public function show(Quote $quotation): View
     {
         abort_if(
-            ! auth()->user()->isAdmin() && $quotation->created_by !== auth()->id(),
+            ! Auth::user()->isAdmin() && $quotation->created_by !== auth()->id(),
             403,
             'You can only view quotes you created.'
         );
@@ -83,10 +83,10 @@ class QuotationController extends Controller
         return view('quotations.show', compact('quotation'));
     }
 
-    public function markSent(Quotation $quotation): RedirectResponse
+    public function markSent(Quote $quotation): RedirectResponse
     {
         abort_if(
-            ! auth()->user()->isAdmin() && $quotation->created_by !== auth()->id(),
+            ! Auth::user()->isAdmin() && $quotation->created_by !== auth()->id(),
             403
         );
 
@@ -100,10 +100,10 @@ class QuotationController extends Controller
             ->with('success', "Quote {$quotation->quote_number} marked as sent. Email dispatched.");
     }
 
-    public function markDeclined(Quotation $quotation): RedirectResponse
+    public function markDeclined(Quote $quotation): RedirectResponse
     {
         abort_if(
-            ! auth()->user()->isAdmin() && $quotation->created_by !== auth()->id(),
+            ! Auth::user()->isAdmin() && $quotation->created_by !== auth()->id(),
             403
         );
 
