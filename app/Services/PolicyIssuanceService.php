@@ -7,6 +7,7 @@ use App\Enums\PolicyStatus;
 use App\Enums\VehicleStatus;
 use App\Models\Policy;
 use App\Models\Vehicle;
+use App\Events\PolicyIssued;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -77,5 +78,7 @@ class PolicyIssuanceService
 
             return $policy->fresh(['addOns']);
         });
+        event(new PolicyIssued($policy->fresh()));
+        return $policy;
     }
 }
