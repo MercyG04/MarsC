@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
@@ -43,6 +44,10 @@ class VehicleDriver extends Model
     {
         return $this->age < 25;
     }
+    public function claims(): HasMany
+    {
+    return $this->hasMany(Claim::class, 'driver_id');
+    }
     /**
      
      * Required for PSV vehicles.
@@ -51,7 +56,7 @@ class VehicleDriver extends Model
     {
         return str_contains(strtoupper($this->dl_class), 'D');
     }
-     // app/Models/VehicleDriver.php
+     
 
 protected static function booted(): void
 {

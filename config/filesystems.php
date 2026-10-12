@@ -47,14 +47,14 @@ return [
             'report' => false,
         ],
 
-        's3' => [
+        'r2' => [
             'driver' => 's3',
-            'key' => env('AWS_ACCESS_KEY_ID'),
-            'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            'region' => env('AWS_DEFAULT_REGION'),
-            'bucket' => env('AWS_BUCKET'),
-            'url' => env('AWS_URL'),
-            'endpoint' => env('AWS_ENDPOINT'),
+            'key' => env('r2_ACCESS_KEY_ID'),
+            'secret' => env('r2_SECRET_ACCESS_KEY'),
+            'region' => env('r2_DEFAULT_REGION', 'auto'),
+            'bucket' => env('r2_BUCKET'),
+            //'url' => env('r2_URL'),
+            'endpoint' => env('r2_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
             'report' => false,

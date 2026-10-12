@@ -8,6 +8,7 @@ use App\Http\Controllers\ValuationsController;
 use App\Http\Controllers\AddOnController;
 use App\Http\Controllers\PolicyController;
 use App\Http\Controllers\QuotationController;
+use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\PolicyCancellationController;
 use App\Http\Controllers\PolicyEndorsementController;
 use App\Http\Controllers\VehicleDriverController;
@@ -68,6 +69,22 @@ Route::middleware('auth')->group(function () {
     //Route::middleware(['auth', 'role:admin'])->group(function () {
     //Route::resource('add-ons', AddOnController::class)->except(['show']);
 //});
+
+    Route::get('claims', [ClaimController::class, 'index'])->name('claims.index');
+    Route::get('policies/{policy}/claims/create', [ClaimController::class, 'create'])->name('claims.create');
+    Route::post('policies/{policy}/claims',       [ClaimController::class, 'store'])->name('claims.store');
+    Route::get('claims/{claim}',            [ClaimController::class, 'show'])->name('claims.show');
+    Route::post('claims/{claim}/acknowledge',  [ClaimController::class, 'acknowledge'])->name('claims.acknowledge');
+    Route::post('claims/{claim}/begin-review',  [ClaimController::class, 'beginReview'])->name('claims.begin-review');
+    Route::post('claims/{claim}/record-assessment',[ClaimController::class, 'recordAssessment'])->name('claims.record-assessment');
+    Route::post('claims/{claim}/approve',    [ClaimController::class, 'approve'])->name('claims.approve');
+
+    Route::post('claims/{claim}/reject',    [ClaimController::class, 'reject'])->name('claims.reject');
+
+    Route::post('claims/{claim}/mark-paid',    [ClaimController::class, 'markPaid'])->name('claims.mark-paid');
+
+    
+
     // Cancellation workflow
     Route::get('policies/{policy}/cancel',  [PolicyCancellationController::class, 'create'])->name('policies.cancel');
     Route::post('policies/{policy}/cancel', [PolicyCancellationController::class, 'store'])->name('policies.cancel.store');

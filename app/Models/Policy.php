@@ -81,10 +81,10 @@ class Policy extends Model
         return $this->belongsTo(Vehicle::class);
     }
 
-    //public function claims(): HasMany
-    //{
-        //return $this->hasMany(Claim::class);
-    //}
+    public function claim(): HasMany
+    {
+        return $this->hasMany(Claim::class);
+    }
     public function quote (): belongsTo
     {
         return $this ->belongsTo(Quote::class);
