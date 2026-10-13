@@ -1,5 +1,14 @@
 @extends('layouts.app')
 
+{{-- @php
+dump([
+'has_clients' => isset($clients),
+'type' => isset($clients) ? get_class($clients) : null,
+'count' => isset($clients) ? $clients->count() : null,
+'total' => isset($clients) ? $clients->total() : null,
+]);
+@endphp --}}
+
 @section('content')
     <div class="max-w-6xl mx-auto py-8 px-4">
 

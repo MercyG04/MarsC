@@ -3,6 +3,10 @@
 @section('content')
     <div class="max-w-3xl mx-auto py-8 px-4">
 
+        <a href="{{ route('clients.index') }}" class="text-sm text-green-700 hover:text-green-900 font-medium">
+            ← Back to Clients
+        </a>
+
         <div class="mb-6">
             <h1 class="text-2xl font-bold text-green-800">Onboard a New Client</h1>
             <p class="text-sm text-gray-500">

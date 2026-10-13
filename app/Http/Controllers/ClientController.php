@@ -15,7 +15,7 @@ class ClientController extends Controller
     ) {}
 
     public function index(): View
-    {
+    {   //dd('INDEX METHOD IS RUNNING');
         $clients = Client::withCount('vehicles')->latest()->paginate(15);
         return view('clients.index', compact('clients'));
     }

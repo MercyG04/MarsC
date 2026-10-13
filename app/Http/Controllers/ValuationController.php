@@ -13,7 +13,7 @@ use App\Models\Vehicle;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
-class ValuationsController extends Controller
+class ValuationController extends Controller
 {
     public function index(Request $request): View
     {

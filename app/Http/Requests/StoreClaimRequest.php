@@ -68,16 +68,7 @@ class StoreClaimRequest extends FormRequest
                     ->whereNull('deleted_at'),
             ],
 
-            // ─── Optional document uploads ───
-            //'documents' => [
-             //   'nullable',
-             //   'array',
-            //],
-            //'documents.*' => [
-            //    'file',
-            //    'mimes:pdf,jpg,jpeg,png,doc,docx',
-             //   'max:10240',   
-            //],
+            
         ];
     }
     public function messages(): array

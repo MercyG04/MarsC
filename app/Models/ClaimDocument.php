@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ClaimDocumentType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,6 +31,7 @@ class ClaimDocument extends Model
             'received_at' => 'datetime',
             'verified_at' => 'datetime',
             'size_bytes'  => 'integer',
+            'type'        => ClaimDocumentType::class,
         ];
     }
 

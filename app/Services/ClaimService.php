@@ -42,6 +42,7 @@ class ClaimService
             return $claim;
         });
     }
+    
 
     /**
      * Acknowledge a claim (AKI requires within 24 hours).
