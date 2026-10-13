@@ -25,7 +25,7 @@ class StorePolicyRequest extends FormRequest
                 'required',
                 Rule::enum(PolicyType::class),
             ],
-
+            
             'payment_frequency' => [
                 'required',
                 Rule::enum(PaymentFrequency::class),

@@ -101,10 +101,10 @@
                             </td>
                             <td class="px-5 py-3">
                                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium
-                                        @if($policy->policy_type === \App\Enums\PolicyType::Comprehensive) bg-lime-100 text-lime-800
-                                        @elseif($policy->policy_type === \App\Enums\PolicyType::ThirdParty) bg-yellow-100 text-yellow-800
-                                        @else bg-purple-100 text-purple-800
-                                        @endif">
+                                                @if($policy->policy_type === \App\Enums\PolicyType::Comprehensive) bg-lime-100 text-lime-800
+                                                @elseif($policy->policy_type === \App\Enums\PolicyType::ThirdParty) bg-yellow-100 text-yellow-800
+                                                @else bg-purple-100 text-purple-800
+                                                @endif">
                                     {{ $policy->policy_type->label() }}
                                 </span>
                             </td>
@@ -122,11 +122,11 @@
                             </td>
                             <td class="px-5 py-3">
                                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium
-                                        @if($policy->status === \App\Enums\PolicyStatus::Active) bg-lime-100 text-lime-800
-                                        @elseif($policy->status === \App\Enums\PolicyStatus::Pending) bg-yellow-100 text-yellow-800
-                                        @elseif($policy->status === \App\Enums\PolicyStatus::Cancelled) bg-gray-100 text-gray-600
-                                        @else bg-purple-100 text-purple-800
-                                        @endif">
+                                                @if($policy->status === \App\Enums\PolicyStatus::Active) bg-lime-100 text-lime-800
+                                                @elseif($policy->status === \App\Enums\PolicyStatus::Pending) bg-yellow-100 text-yellow-800
+                                                @elseif($policy->status === \App\Enums\PolicyStatus::Cancelled) bg-gray-100 text-gray-600
+                                                @else bg-purple-100 text-purple-800
+                                                @endif">
                                     {{ $policy->status->label() }}
                                 </span>
                             </td>

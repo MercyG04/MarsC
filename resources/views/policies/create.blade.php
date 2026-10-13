@@ -97,6 +97,7 @@
             class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-6">
             @csrf
 
+
             {{-- ─── Step 1 — Cover Type ─── --}}
             <div>
                 <h2 class="text-sm font-semibold text-green-800 mb-3">1. Choose Cover Type</h2>
@@ -107,8 +108,8 @@
                             <input type="radio" name="policy_type" value="{{ $type->value }}" @checked(old('policy_type', \App\Enums\PolicyType::Comprehensive->value) === $type->value) class="peer sr-only">
 
                             <div class="p-4 rounded-lg border-2 border-gray-200
-                                            peer-checked:border-green-500 peer-checked:bg-lime-50
-                                            hover:border-green-300 transition">
+                                                    peer-checked:border-green-500 peer-checked:bg-lime-50
+                                                    hover:border-green-300 transition">
 
                                 <p class="font-semibold text-gray-800">{{ $type->label() }}</p>
                                 <p class="text-xs text-gray-500 mt-1">{{ $type->description() }}</p>
@@ -138,7 +139,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         @foreach ($addOns as $addOn)
                             <label class="flex items-start gap-3 p-3 rounded-lg border-2 border-gray-200
-                                                  hover:border-green-300 cursor-pointer transition">
+                                                              hover:border-green-300 cursor-pointer transition">
                                 <input type="checkbox" name="add_on_ids[]" value="{{ $addOn->id }}" @checked(in_array($addOn->id, old('add_on_ids', [])))
                                     class="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500">
 

@@ -45,4 +45,24 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    public function admin(): static
+    {
+        return $this->state(fn () => ['role' => UserRole::Admin]);
+    }
+
+    public function underwriter(): static
+    {
+        return $this->state(fn () => ['role' => UserRole::Underwriter]);
+    }
+
+    public function claimsOfficer(): static
+    {
+        return $this->state(fn () => ['role' => UserRole::ClaimsOfficer]);
+    }
+
+    public function agent(): static
+    {
+        return $this->state(fn () => ['role' => UserRole::Agent]);
+    }
 }

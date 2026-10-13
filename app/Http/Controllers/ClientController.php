@@ -30,7 +30,7 @@ class ClientController extends Controller
         $client = $this->kyc->onboard($request->validated());
 
         return redirect()
-            ->route('clients.show', $client)
+            ->route('clients.show', $client, )
             ->with('success', "Client {$client->first_name} {$client->last_name} onboarded successfully.");
     }
 
