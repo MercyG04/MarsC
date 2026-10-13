@@ -1,24 +1,24 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="max-w-5xl mx-auto py-8 px-4">
+    <div class="max-w-5xl mx-auto py-6 sm:py-8 px-4">
 
         {{-- ─── Header ─── --}}
         <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div>
+            <div class="min-w-0">
                 <a href="{{ route('claims.index') }}" class="text-sm text-green-700 hover:text-green-900 font-medium">
                     ← Back to Claims
                 </a>
-                <h1 class="text-2xl font-bold text-green-800 mt-2">
+                <h1 class="text-xl sm:text-2xl font-bold text-green-800 mt-2 break-words">
                     Claim <span class="font-mono">{{ $claim->claim_number }}</span>
                 </h1>
-                <p class="text-sm text-gray-500">
+                <p class="text-sm text-gray-500 mt-1">
                     {{ $claim->claim_type->label() }} ·
                     Reported {{ $claim->reported_at->format('d M Y, H:i') }}
                 </p>
             </div>
 
-            <div class="text-left sm:text-right">
+            <div class="text-left sm:text-right shrink-0">
                 @php
                     $statusClasses = match ($claim->status) {
                         \App\Enums\ClaimStatus::Submitted => 'bg-gray-100 text-gray-700',
@@ -53,24 +53,35 @@
             </div>
         @endif
 
+        {{-- ─── Officers list — hoisted for use in multiple transition forms ─── --}}
+        @php
+            $officers = \App\Models\User::whereIn('role', [
+                \App\Enums\UserRole::ClaimsOfficer->value,
+                \App\Enums\UserRole::Underwriter->value,
+                \App\Enums\UserRole::Admin->value,
+            ])->orderBy('name')->get();
+        @endphp
+
         {{-- ─── Policy + Client + Vehicle cards ─── --}}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
             {{-- Policy --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                 <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide mb-3">Policy</h2>
                 <dl class="text-sm space-y-1.5">
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Number</dt>
-                        <dd class="font-mono text-xs font-semibold text-gray-800">{{ $claim->policy->policy_number }}</dd>
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-gray-500 shrink-0">Number</dt>
+                        <dd class="font-mono text-xs font-semibold text-gray-800 truncate">
+                            {{ $claim->policy->policy_number }}</dd>
                     </div>
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Cover</dt>
-                        <dd class="text-gray-800">{{ $claim->policy->policy_type->label() }}</dd>
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-gray-500 shrink-0">Cover</dt>
+                        <dd class="text-gray-800 text-right">{{ $claim->policy->policy_type->label() }}</dd>
                     </div>
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Deductible</dt>
-                        <dd class="font-medium text-gray-800">KES {{ number_format($claim->policy->deductible_amount, 2) }}
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-gray-500 shrink-0">Deductible</dt>
+                        <dd class="font-medium text-gray-800 text-right">
+                            KES {{ number_format($claim->policy->deductible_amount, 2) }}
                         </dd>
                     </div>
                     <div class="pt-2 mt-2 border-t border-gray-100">
@@ -84,19 +95,19 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                 <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide mb-3">Client</h2>
                 <dl class="text-sm space-y-1.5">
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Name</dt>
-                        <dd class="font-medium text-gray-800">
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-gray-500 shrink-0">Name</dt>
+                        <dd class="font-medium text-gray-800 text-right">
                             {{ $claim->policy->client->first_name }} {{ $claim->policy->client->last_name }}
                         </dd>
                     </div>
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Phone</dt>
-                        <dd class="text-gray-800">{{ $claim->policy->client->phone_number }}</dd>
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-gray-500 shrink-0">Phone</dt>
+                        <dd class="text-gray-800 text-right">{{ $claim->policy->client->phone_number }}</dd>
                     </div>
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Email</dt>
-                        <dd class="text-gray-800 truncate">{{ $claim->policy->client->email }}</dd>
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-gray-500 shrink-0">Email</dt>
+                        <dd class="text-gray-800 truncate text-right">{{ $claim->policy->client->email }}</dd>
                     </div>
                     <div class="pt-2 mt-2 border-t border-gray-100">
                         <a href="{{ route('clients.show', $claim->policy->client) }}"
@@ -106,21 +117,22 @@
             </div>
 
             {{-- Vehicle --}}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 sm:col-span-2 lg:col-span-1">
                 <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide mb-3">Vehicle</h2>
                 <dl class="text-sm space-y-1.5">
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Registration</dt>
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-gray-500 shrink-0">Registration</dt>
                         <dd class="font-mono font-semibold text-gray-800">{{ $claim->policy->vehicle->registration_number }}
                         </dd>
                     </div>
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Make & Model</dt>
-                        <dd class="text-gray-800">{{ $claim->policy->vehicle->make }} {{ $claim->policy->vehicle->model }}
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-gray-500 shrink-0">Make & Model</dt>
+                        <dd class="text-gray-800 text-right">
+                            {{ $claim->policy->vehicle->make }} {{ $claim->policy->vehicle->model }}
                         </dd>
                     </div>
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Year</dt>
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-gray-500 shrink-0">Year</dt>
                         <dd class="text-gray-800">{{ $claim->policy->vehicle->year_of_manufacture }}</dd>
                     </div>
                     <div class="pt-2 mt-2 border-t border-gray-100">
@@ -135,26 +147,26 @@
         <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-100 p-5">
             <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide mb-4">Incident Details</h2>
             <dl class="text-sm space-y-2">
-                <div class="flex justify-between">
-                    <dt class="text-gray-500">Incident Date</dt>
+                <div class="flex justify-between gap-3">
+                    <dt class="text-gray-500 shrink-0">Incident Date</dt>
                     <dd class="text-gray-800 font-medium">{{ $claim->incident_date->format('d M Y') }}</dd>
                 </div>
                 @if ($claim->location)
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Location</dt>
-                        <dd class="text-gray-800">{{ $claim->location }}</dd>
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-gray-500 shrink-0">Location</dt>
+                        <dd class="text-gray-800 text-right">{{ $claim->location }}</dd>
                     </div>
                 @endif
                 @if ($claim->police_abstract_ref)
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Police Abstract</dt>
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-gray-500 shrink-0">Police Abstract</dt>
                         <dd class="font-mono text-gray-800">{{ $claim->police_abstract_ref }}</dd>
                     </div>
                 @endif
                 @if ($claim->driver)
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Driver at Time</dt>
-                        <dd class="text-gray-800">
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-gray-500 shrink-0">Driver at Time</dt>
+                        <dd class="text-gray-800 text-right">
                             {{ $claim->driver->name }}
                             @if ($claim->driver->is_primary)
                                 <span class="text-xs text-lime-700 ml-1">(Primary)</span>
@@ -162,9 +174,9 @@
                         </dd>
                     </div>
                 @else
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Driver at Time</dt>
-                        <dd class="text-yellow-700 text-sm italic">Not in authorized list</dd>
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-gray-500 shrink-0">Driver at Time</dt>
+                        <dd class="text-yellow-700 text-sm italic text-right">Not in authorized list</dd>
                     </div>
                 @endif
                 <div class="pt-2 mt-2 border-t border-gray-100">
@@ -178,39 +190,39 @@
         <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-100 p-5">
             <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide mb-4">Financials</h2>
             <dl class="text-sm space-y-2">
-                <div class="flex justify-between">
+                <div class="flex justify-between gap-3">
                     <dt class="text-gray-600">Amount Claimed</dt>
                     <dd class="text-gray-800">KES {{ number_format($claim->claimed_amount, 2) }}</dd>
                 </div>
                 @if ($claim->assessed_amount)
-                    <div class="flex justify-between">
+                    <div class="flex justify-between gap-3">
                         <dt class="text-gray-600">Assessed Amount</dt>
                         <dd class="text-gray-800">KES {{ number_format($claim->assessed_amount, 2) }}</dd>
                     </div>
                 @endif
                 @if ($claim->approved_amount)
-                    <div class="flex justify-between">
+                    <div class="flex justify-between gap-3">
                         <dt class="text-gray-600">Approved Amount</dt>
                         <dd class="text-gray-800">KES {{ number_format($claim->approved_amount, 2) }}</dd>
                     </div>
                 @endif
                 @if ($claim->deductible_applied)
-                    <div class="flex justify-between">
+                    <div class="flex justify-between gap-3">
                         <dt class="text-gray-600">Deductible Applied</dt>
                         <dd class="text-gray-800">− KES {{ number_format($claim->deductible_applied, 2) }}</dd>
                     </div>
                 @endif
                 @if ($claim->salvage_value)
-                    <div class="flex justify-between">
+                    <div class="flex justify-between gap-3">
                         <dt class="text-gray-600">Salvage Retained</dt>
                         <dd class="text-gray-800">− KES {{ number_format($claim->salvage_value, 2) }}</dd>
                     </div>
                 @endif
 
                 @if ($claim->netPayout() !== null)
-                    <div class="flex justify-between border-t-2 border-green-200 pt-3 mt-3">
+                    <div class="flex justify-between items-baseline gap-3 border-t-2 border-green-200 pt-3 mt-3">
                         <dt class="font-semibold text-green-800">Net Payout</dt>
-                        <dd class="font-bold text-green-800 text-xl">
+                        <dd class="font-bold text-green-800 text-lg sm:text-xl">
                             KES {{ number_format($claim->netPayout(), 2) }}
                         </dd>
                     </div>
@@ -223,8 +235,8 @@
             <div class="mt-4 bg-white rounded-xl shadow-sm border border-red-200 p-5">
                 <h2 class="text-xs font-semibold text-red-800 uppercase tracking-wide mb-4">Rejection Details</h2>
                 <dl class="text-sm space-y-2">
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Rejected On</dt>
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-gray-500 shrink-0">Rejected On</dt>
                         <dd class="text-gray-800">{{ $claim->rejected_at?->format('d M Y, H:i') }}</dd>
                     </div>
                     @if ($claim->rejection_reason)
@@ -245,36 +257,186 @@
             </div>
         @endif
 
-        {{-- ─── Documents (placeholder for now) ─── --}}
-        <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-            <div class="flex items-center justify-between mb-3">
-                <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide">Documents</h2>
-                <span class="text-xs text-gray-400">{{ $claim->documents->count() }} attached</span>
+       
+        {{-- ─── Documents ─── --}}
+<div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide">Documents</h2>
+        @php
+            $received = $claim->documents->whereNull('deleted_at')->pluck('type')->map(fn ($t) => $t->value)->toArray();
+            $required = \App\Enums\ClaimDocumentType::requiredForIntake();
+            $receivedCount = count(array_intersect(array_map(fn ($t) => $t->value, $required), $received));
+        @endphp
+        <span class="text-xs
+            {{ $receivedCount === count($required) ? 'text-green-700 font-medium' : 'text-yellow-700' }}">
+            {{ $receivedCount }} of {{ count($required) }} required
+        </span>
+    </div>
+
+    {{-- Required documents --}}
+    <div class="space-y-3">
+        @foreach ($required as $type)
+            @php
+                $doc = $claim->documents
+                    ->whereNull('deleted_at')
+                    ->where('type', $type)
+                    ->first();
+            @endphp
+
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 rounded-lg
+                {{ $doc ? 'bg-lime-50 border border-lime-200' : 'bg-yellow-50 border border-yellow-200' }}">
+
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="font-medium text-gray-800 text-sm">{{ $type->label() }}</span>
+                        @if ($doc)
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-lime-200 text-lime-900 font-medium">
+                                Received
+                            </span>
+                        @else
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-yellow-200 text-yellow-900 font-medium">
+                                Pending
+                            </span>
+                        @endif
+                    </div>
+                    @if ($doc)
+                        <div class="text-xs text-gray-500 mt-1 truncate">
+                            {{ $doc->original_filename }}
+                            · {{ number_format($doc->size_bytes / 1024, 1) }} KB
+                        </div>
+                    @endif
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0">
+                    @if ($doc)
+                        <a href="{{ route('claims.documents.download', [$claim, $doc]) }}"
+                           class="text-xs px-3 py-1.5 rounded-lg border border-green-300 text-green-700 hover:bg-green-50 font-medium">
+                            Download
+                        </a>
+                        <form method="POST" action="{{ route('claims.documents.destroy', [$claim, $doc]) }}"
+                              onsubmit="return confirm('Remove this document?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                    class="text-xs px-3 py-1.5 rounded-lg border border-red-300 text-red-700 hover:bg-red-50 font-medium">
+                                Remove
+                            </button>
+                        </form>
+                    @else
+                        <button type="button"
+                                onclick="document.getElementById('upload-{{ $type->value }}').classList.toggle('hidden')"
+                                class="text-xs px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium">
+                            Upload
+                        </button>
+                    @endif
+                </div>
             </div>
 
-            @if ($claim->documents->isEmpty())
-                <p class="text-sm text-gray-400">
-                    No documents attached yet. Document upload will be available in a future update.
-                </p>
-            @else
-                <ul class="divide-y divide-gray-100 text-sm">
-                    @foreach ($claim->documents as $doc)
-                        <li class="py-2 flex items-center justify-between">
-                            <span class="font-medium text-gray-800">{{ $doc->type->label() ?? $doc->type }}</span>
-                            <span class="text-xs text-gray-500">{{ $doc->original_filename }}</span>
-                        </li>
-                    @endforeach
-                </ul>
+            {{-- Upload form (hidden by default) --}}
+            @if (! $doc)
+                <div id="upload-{{ $type->value }}" class="hidden pl-3 mt-2">
+                    <form method="POST"
+                          action="{{ route('claims.documents.store', $claim) }}"
+                          enctype="multipart/form-data"
+                          class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                        @csrf
+                        <input type="hidden" name="type" value="{{ $type->value }}">
+                        <input type="file" name="file" required
+                               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                               class="flex-1 rounded-lg border-2 border-purple-200 bg-white px-3 py-2 text-sm text-gray-700 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-purple-600 file:text-white file:text-xs file:font-medium hover:file:bg-purple-700">
+                        <button type="submit"
+                                class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium shrink-0">
+                            Upload
+                        </button>
+                    </form>
+                </div>
             @endif
-        </div>
+        @endforeach
+    </div>
 
+    {{-- Optional documents --}}
+    @php
+        $optionalTypes = collect(\App\Enums\ClaimDocumentType::cases())
+            ->reject(fn ($t) => in_array($t, $required, true));
+    @endphp
+
+    @if ($optionalTypes->isNotEmpty())
+        <div class="mt-6 pt-4 border-t border-gray-100">
+            <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">Additional Documents</h3>
+            <div class="flex flex-wrap gap-2">
+                @foreach ($optionalTypes as $type)
+                    <button type="button"
+                            onclick="document.getElementById('upload-opt-{{ $type->value }}').classList.toggle('hidden')"
+                            class="text-xs px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium">
+                        + {{ $type->label() }}
+                    </button>
+                @endforeach
+            </div>
+
+            @foreach ($optionalTypes as $type)
+                <div id="upload-opt-{{ $type->value }}" class="hidden mt-3">
+                    <form method="POST"
+                          action="{{ route('claims.documents.store', $claim) }}"
+                          enctype="multipart/form-data"
+                          class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                        @csrf
+                        <input type="hidden" name="type" value="{{ $type->value }}">
+                        <input type="file" name="file" required
+                               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                               class="flex-1 rounded-lg border-2 border-purple-200 bg-white px-3 py-2 text-sm text-gray-700 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-purple-600 file:text-white file:text-xs file:font-medium hover:file:bg-purple-700">
+                        <button type="submit"
+                                class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium shrink-0">
+                            Upload
+                        </button>
+                    </form>
+                </div>
+            @endforeach
+        </div>
+    @endif
+
+    {{-- Uploaded optional documents --}}
+    @php
+        $optionalDocs = $claim->documents
+            ->whereNull('deleted_at')
+            ->reject(fn ($d) => in_array($d->type, $required, true));
+    @endphp
+
+    @if ($optionalDocs->isNotEmpty())
+        <div class="mt-4 pt-4 border-t border-gray-100">
+            <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Additional Files</h3>
+            <ul class="divide-y divide-gray-100 text-sm">
+                @foreach ($optionalDocs as $doc)
+                    <li class="py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div class="min-w-0">
+                            <div class="font-medium text-gray-800">{{ $doc->type->label() }}</div>
+                            <div class="text-xs text-gray-500 truncate">
+                                {{ $doc->original_filename }} · {{ number_format($doc->size_bytes / 1024, 1) }} KB
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <a href="{{ route('claims.documents.download', [$claim, $doc]) }}"
+                               class="text-xs text-green-700 hover:text-green-900 font-medium">Download</a>
+                            <form method="POST" action="{{ route('claims.documents.destroy', [$claim, $doc]) }}"
+                                  onsubmit="return confirm('Remove this document?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-xs text-red-600 hover:text-red-800 font-medium">
+                                    Remove
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+</div>
+      
 
         {{-- ─── Transitions ─── --}}
+        <div class="mt-6 space-y-4">
 
-
-        <div class="mt-6">
-
-            {{-- Acknowledge ── status Submitted --}}
+            {{-- ═══ Acknowledge ── status Submitted ═══ --}}
             @if ($claim->status === \App\Enums\ClaimStatus::Submitted)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                     <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide mb-3">
@@ -287,14 +449,14 @@
                     <form method="POST" action="{{ route('claims.acknowledge', $claim) }}">
                         @csrf
                         <button type="submit"
-                            class="px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium shadow-sm">
+                            class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium shadow-sm transition">
                             Acknowledge Claim
                         </button>
                     </form>
                 </div>
             @endif
 
-            {{-- Assign & Begin Review ── status Acknowledged --}}
+            {{-- ═══ Assign & Begin Review ── status Acknowledged ═══ --}}
             @if ($claim->status === \App\Enums\ClaimStatus::Acknowledged)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                     <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide mb-3">
@@ -305,17 +467,8 @@
                         must be received before the claim moves to review.
                     </p>
 
-                    @php
-                        $officers = \App\Models\User::whereIn('role', [
-                            \App\Enums\UserRole::ClaimsOfficer->value,
-                            \App\Enums\UserRole::Underwriter->value,
-                            \App\Enums\UserRole::Admin->value,
-                        ])->orderBy('name')->get();
-                    @endphp
-
                     <form method="POST" action="{{ route('claims.begin-review', $claim) }}" class="space-y-4">
                         @csrf
-
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Assign To *
@@ -330,16 +483,15 @@
                                 @endforeach
                             </select>
                         </div>
-
                         <button type="submit"
-                            class="px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium shadow-sm">
+                            class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium shadow-sm transition">
                             Begin Review
                         </button>
                     </form>
                 </div>
             @endif
 
-            {{-- Record Assessment ── status UnderReview --}}
+            {{-- ═══ Record Assessment ── status UnderReview ═══ --}}
             @if ($claim->status === \App\Enums\ClaimStatus::UnderReview)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                     <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide mb-3">
@@ -352,7 +504,6 @@
 
                     <form method="POST" action="{{ route('claims.record-assessment', $claim) }}" class="space-y-4">
                         @csrf
-
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                             <div>
@@ -386,9 +537,7 @@
                                 </label>
                                 <input type="number" name="salvage_value" min="0" step="0.01" value="{{ old('salvage_value') }}"
                                     class="w-full rounded-lg border-2 border-purple-200 bg-white px-4 py-3 text-base text-gray-800 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 focus:outline-none transition">
-                                <p class="text-xs text-gray-500 mt-1.5">
-                                    Only if the client retains the salvage.
-                                </p>
+                                <p class="text-xs text-gray-500 mt-1.5">Only if the client retains the salvage.</p>
                             </div>
 
                             <div>
@@ -416,14 +565,179 @@
                         </div>
 
                         <button type="submit"
-                            class="px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium shadow-sm">
+                            class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium shadow-sm transition">
                             Record Assessment
                         </button>
                     </form>
                 </div>
             @endif
 
-            {{-- Next session: Assessed, Approved, Rejected, Paid states --}}
+            {{-- ═══ Approve / Reject ── status Assessed ═══ --}}
+            @if ($claim->status === \App\Enums\ClaimStatus::Assessed)
+
+                {{-- Approve — underwriter or admin --}}
+                @if (auth()->user()->hasRole(\App\Enums\UserRole::Admin, \App\Enums\UserRole::Underwriter))
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                        <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide mb-3">
+                            Approve Claim
+                        </h2>
+                        <p class="text-sm text-gray-600 mb-4">
+                            The assessed amount is <strong>KES {{ number_format($claim->assessed_amount, 2) }}</strong>.
+                            Approving commits the insurer to a payout.
+                        </p>
+
+                        <form method="POST" action="{{ route('claims.approve', $claim) }}" class="space-y-4">
+                            @csrf
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Approved Amount (KES) *
+                                    </label>
+                                    <input type="number" name="approved_amount" required min="0" step="0.01"
+                                        value="{{ old('approved_amount', $claim->assessed_amount) }}"
+                                        class="w-full rounded-lg border-2 border-purple-200 bg-white px-4 py-3 text-base text-gray-800 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 focus:outline-none transition">
+                                    <p class="text-xs text-gray-500 mt-1.5">
+                                        Cannot exceed the assessed amount. Must exceed the policy deductible of KES
+                                        {{ number_format($claim->policy->deductible_amount, 2) }}.
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Salvage Value (KES)
+                                    </label>
+                                    <input type="number" name="salvage_value" min="0" step="0.01"
+                                        value="{{ old('salvage_value', $claim->salvage_value) }}"
+                                        class="w-full rounded-lg border-2 border-purple-200 bg-white px-4 py-3 text-base text-gray-800 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 focus:outline-none transition">
+                                </div>
+                            </div>
+                            <button type="submit"
+                                class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium shadow-sm transition">
+                                Approve Claim
+                            </button>
+                        </form>
+                    </div>
+                @endif
+
+                {{-- Reject — underwriter or admin --}}
+                @if (auth()->user()->hasRole(\App\Enums\UserRole::Admin, \App\Enums\UserRole::Underwriter))
+                    <div class="bg-white rounded-xl shadow-sm border border-red-200 p-5">
+                        <h2 class="text-xs font-semibold text-red-800 uppercase tracking-wide mb-3">
+                            Reject Claim
+                        </h2>
+                        <p class="text-sm text-gray-600 mb-4">
+                            Rejecting denies liability. Fraud-based rejections require documented evidence.
+                        </p>
+
+                        <form method="POST" action="{{ route('claims.reject', $claim) }}" class="space-y-4">
+                            @csrf
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Rejection Reason *
+                                </label>
+                                <select name="rejection_reason" required
+                                    class="w-full rounded-lg border-2 border-purple-200 bg-white px-4 py-3 text-base text-gray-800 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 focus:outline-none transition">
+                                    <option value="">Select a reason…</option>
+                                    @foreach (\App\Enums\RejectionReason::cases() as $reason)
+                                        <option value="{{ $reason->value }}" @selected(old('rejection_reason') === $reason->value)>
+                                            {{ $reason->label() }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Notes / Evidence
+                                </label>
+                                <textarea name="rejection_notes" rows="4"
+                                    placeholder="Document the evidence and legal basis for rejection. Required for fraud-based rejections."
+                                    class="w-full rounded-lg border-2 border-purple-200 bg-white px-4 py-3 text-base text-gray-800 placeholder-gray-400 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 focus:outline-none transition">{{ old('rejection_notes') }}</textarea>
+                            </div>
+
+                            <button type="submit" onclick="return confirm('Reject this claim? This is a final decision.')"
+                                class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium shadow-sm transition">
+                                Reject Claim
+                            </button>
+                        </form>
+                    </div>
+                @endif
+            @endif
+
+            {{-- ═══ Mark Paid ── status Approved ═══ --}}
+            @if ($claim->status === \App\Enums\ClaimStatus::Approved)
+
+                {{-- Approved summary --}}
+                <div class="bg-lime-50 rounded-xl shadow-sm border border-lime-200 p-5">
+                    <h2 class="text-xs font-semibold text-lime-900 uppercase tracking-wide mb-3">
+                        Claim Approved
+                    </h2>
+                    <dl class="text-sm space-y-1.5">
+                        <div class="flex justify-between gap-3">
+                            <dt class="text-lime-800">Approved Amount</dt>
+                            <dd class="font-medium text-lime-900">KES {{ number_format($claim->approved_amount, 2) }}</dd>
+                        </div>
+                        @if ($claim->deductible_applied)
+                            <div class="flex justify-between gap-3">
+                                <dt class="text-lime-800">Less Deductible</dt>
+                                <dd class="text-lime-900">− KES {{ number_format($claim->deductible_applied, 2) }}</dd>
+                            </div>
+                        @endif
+                        @if ($claim->salvage_value)
+                            <div class="flex justify-between gap-3">
+                                <dt class="text-lime-800">Less Salvage</dt>
+                                <dd class="text-lime-900">− KES {{ number_format($claim->salvage_value, 2) }}</dd>
+                            </div>
+                        @endif
+                        @if ($claim->netPayout() !== null)
+                            <div class="flex justify-between items-baseline gap-3 border-t border-lime-300 pt-3 mt-3">
+                                <dt class="font-semibold text-lime-900">Net Payout</dt>
+                                <dd class="font-bold text-lime-900 text-lg">KES {{ number_format($claim->netPayout(), 2) }}</dd>
+                            </div>
+                        @endif
+                    </dl>
+                </div>
+
+                {{-- Mark paid — admin only --}}
+                @if (auth()->user()->hasRole(\App\Enums\UserRole::Admin))
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                        <h2 class="text-xs font-semibold text-green-800 uppercase tracking-wide mb-3">
+                            Mark as Paid
+                        </h2>
+                        <p class="text-sm text-gray-600 mb-4">
+                            Confirm that payment has been issued to the client. This is the final
+                            state for the claim and cannot be reversed.
+                        </p>
+                        <form method="POST" action="{{ route('claims.mark-paid', $claim) }}">
+                            @csrf
+                            <button type="submit"
+                                onclick="return confirm('Confirm that payment has been issued? This closes the claim.')"
+                                class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium shadow-sm transition">
+                                Mark as Paid
+                            </button>
+                        </form>
+                    </div>
+                @else
+                    <div class="rounded-lg bg-lilac-50 border border-purple-200 p-4 text-xs text-gray-600">
+                        <strong class="text-green-800">Awaiting admin payment.</strong>
+                        Only an administrator can confirm payment has been issued.
+                    </div>
+                @endif
+            @endif
+
+            {{-- ═══ Final states ── Rejected / Paid ═══ --}}
+            @if ($claim->status === \App\Enums\ClaimStatus::Rejected)
+                <div class="rounded-lg bg-red-50 border border-red-200 p-4 text-xs text-red-800">
+                    <strong>This claim has been rejected.</strong>
+                    No further actions are available.
+                </div>
+            @endif
+
+            @if ($claim->status === \App\Enums\ClaimStatus::Paid)
+                <div class="rounded-lg bg-green-50 border border-green-200 p-4 text-xs text-green-800">
+                    <strong>This claim has been paid and closed.</strong>
+                    Paid on {{ $claim->paid_at?->format('d M Y, H:i') }}.
+                </div>
+            @endif
 
         </div>
 
