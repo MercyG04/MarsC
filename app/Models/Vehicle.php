@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App\Models\VehicleDriver;
 use App\Models\Valuation;
@@ -27,7 +29,7 @@ use App\Enums\VehicleStatus;
         'ntsa_verified',
         'ntsa_verified_at',])]
 class Vehicle extends Model
-{
+{ use HasFactory, SoftDeletes;
     protected  function casts(): array 
     {
         return [
@@ -77,6 +79,10 @@ class Vehicle extends Model
         return "{$this->year_of_manufacture} {$this->make} {$this->model} ({$this->registration_number})";
     }
 
+    public function canReceivePolicy(): bool
+    {
+    return $this->status === VehicleStatus::Valued;
+    }
     public function getAgeAttribute(): int
     {
         return now()->year - $this->year_of_manufacture;
