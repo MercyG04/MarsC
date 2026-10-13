@@ -6,8 +6,9 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\ValuationController;
 use App\Http\Controllers\AddOnController;
+use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\PolicyController;
-use App\Http\Controllers\ClaimDocumentControler;
+use App\Http\Controllers\ClaimDocumentController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\PolicyCancellationController;
@@ -32,6 +33,13 @@ Route::middleware('auth')->group(function () {
 
     //clients
     Route::resource('clients', ClientController::class);
+
+    //mock-server verification
+   
+
+    Route::post('verify/iprs',   [VerificationController::class, 'verifyIprs'])->name('verify.iprs');
+    Route::post('verify/driver', [VerificationController::class, 'verifyDriver'])->name('verify.driver');
+    Route::post('verify/vehicle', [VerificationController::class, 'verifyVehicle'])->name('verify.vehicle');
 
     //vehicles
     Route::prefix('clients/{client}')->group(function () {

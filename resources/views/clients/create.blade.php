@@ -35,15 +35,29 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">National ID *</label>
-                        <input type="text" name="national_id" value="{{ old('national_id') }}" required
-                            class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm">
+                        <div class="flex gap-2">
+                            <input type="text" name="national_id" id="national_id" value="{{ old('national_id') }}" required
+                                class="flex-1 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm">
+                            <button type="button" onclick="verifyIprs()" id="verify-iprs-btn"
+                                class="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium shrink-0">
+                                Verify
+                            </button>
+                        </div>
                         <p class="text-xs text-gray-500 mt-1">Try 12345678 or 87654321</p>
+                        <p id="iprs-status" class="text-xs mt-1"></p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Driving Licence No.</label>
-                        <input type="text" name="dl_number" value="{{ old('dl_number') }}"
-                            class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm">
-                        <p class="text-xs text-gray-500 mt-1">Try DL-001, DL-002, DL-003</p>
+                        <div class="flex gap-2">
+                            <input type="text" name="dl_number" id="dl_number" value="{{ old('dl_number') }}"
+                                class="flex-1 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm">
+                            <button type="button" onclick="verifyDriver()" id="verify-driver-btn"
+                                class="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium shrink-0">
+                                Verify
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Try DL-001, DL-002, or DL-003</p>
+                        <p id="driver-status" class="text-xs mt-1"></p>
                     </div>
                 </div>
             </div>
@@ -155,4 +169,117 @@
             </div>
         </form>
     </div>
+
+    <script>
+        async function verifyIprs() {
+            const nationalId = document.getElementById('national_id').value.trim();
+            const status = document.getElementById('iprs-status');
+            const btn = document.getElementById('verify-iprs-btn');
+
+            if (!nationalId) {
+                status.textContent = 'Enter a national ID first.';
+                status.className = 'text-xs mt-1 text-yellow-700';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Verifying…';
+            status.textContent = '';
+
+            try {
+                const response = await fetch('{{ route('verify.iprs') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ national_id: nationalId }),
+                });
+
+                const result = await response.json();
+
+                if (!result.ok) {
+                    status.textContent = result.error || 'Not found.';
+                    status.className = 'text-xs mt-1 text-red-700';
+                    return;
+                }
+
+                // Fill in the form fields
+                fillField('first_name', result.data.first_name);
+                fillField('last_name', result.data.last_name);
+                fillField('other_names', result.data.other_names);
+                fillField('kra_pin', result.data.kra_pin);
+                fillField('date_of_birth', result.data.date_of_birth);
+                fillField('gender', result.data.gender);
+
+                status.textContent = '✓ Verified with IPRS.';
+                status.className = 'text-xs mt-1 text-green-700 font-medium';
+            } catch (error) {
+                status.textContent = 'Verification failed. Try again.';
+                status.className = 'text-xs mt-1 text-red-700';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Verify';
+            }
+        }
+
+        async function verifyDriver() {
+            const dlNumber = document.getElementById('dl_number').value.trim();
+            const status = document.getElementById('driver-status');
+            const btn = document.getElementById('verify-driver-btn');
+
+            if (!dlNumber) {
+                status.textContent = 'Enter a DL number first.';
+                status.className = 'text-xs mt-1 text-yellow-700';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Verifying…';
+            status.textContent = '';
+
+            try {
+                const response = await fetch('{{ route('verify.driver') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ dl_number: dlNumber }),
+                });
+
+                const result = await response.json();
+
+                if (!result.ok) {
+                    status.textContent = result.error || 'Not found.';
+                    status.className = 'text-xs mt-1 text-red-700';
+                    return;
+                }
+
+                // Fill in driving experience
+                fillField('driving_experience', result.data.driving_experience);
+
+                status.textContent = `✓ Verified with NTSA. Class ${result.data.dl_class}.`;
+                status.className = 'text-xs mt-1 text-green-700 font-medium';
+            } catch (error) {
+                status.textContent = 'Verification failed. Try again.';
+                status.className = 'text-xs mt-1 text-red-700';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Verify';
+            }
+        }
+
+        /**
+         * Helper — set a form field's value by name.
+         */
+        function fillField(name, value) {
+            const field = document.querySelector(`[name="${name}"]`);
+            if (field && value !== undefined && value !== null) {
+                field.value = value;
+            }
+        }
+    </script>
 @endsection
