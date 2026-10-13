@@ -8,7 +8,7 @@
             <div>
                 <a href="{{ route('clients.show', $vehicle->client) }}"
                     class="text-sm text-green-700 hover:text-green-900 font-medium">
-                    ← Back to {{ $vehicle->client->first_name }} {{ $vehicle->client->last_name }}
+                    ← Back to Clients page
                 </a>
                 <h1 class="text-2xl font-bold text-green-800 mt-2">
                     {{ $vehicle->make }} {{ $vehicle->model }}

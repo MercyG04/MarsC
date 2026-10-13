@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\PolicyType;
 use App\Enums\QuotationStatus;
 use App\Events\QuoteSent;
 use App\Models\Quote;
@@ -20,11 +21,12 @@ class QuoteService
     public function create(array $data): Quote
     {
         return DB::transaction(function () use ($data) {
+            $type = PolicyType::from($data['policy_type']);
 
             // 1. Compute the premium breakdown for the raw vehicle details
             $breakdown = $this->calculator->calculateForQuote(
                 $data['vehicle_details'],
-                $data['policy_type'],
+                $type,
                 $data['selected_add_on_ids'] ?? [],
             );
 
@@ -36,7 +38,7 @@ class QuoteService
                 'prospect_phone'      => $data['prospect_phone'] ?? null,
                 'prospect_email'      => $data['prospect_email'] ?? null,
                 'vehicle_details'     => $data['vehicle_details'],
-                'policy_type'         => $data['policy_type'],
+                'policy_type'         => $type,
                 'selected_add_on_ids' => $data['selected_add_on_ids'] ?? [],
                 'premium_breakdown'   => $breakdown,
                 'gross_premium'       => $breakdown['gross_premium'],

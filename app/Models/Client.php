@@ -34,7 +34,7 @@ class Client extends Model
         return [
             'date_of_birth' => 'date',
             'consent_given' => 'boolean',
-            'consent_give_at' => 'datetime',
+            'consent_given_at' => 'datetime',
             'driving_experience' => 'integer',
 
         ];

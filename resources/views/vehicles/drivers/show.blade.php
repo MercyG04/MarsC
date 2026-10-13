@@ -6,7 +6,7 @@
         <div class="mb-6">
             <a href="{{ route('vehicles.show', $vehicle) }}"
                 class="text-sm text-green-700 hover:text-green-900 font-medium">
-                ← Back to {{ $vehicle->make }} {{ $vehicle->model }}
+                ← Back
             </a>
             <h1 class="text-2xl font-bold text-green-800 mt-2">{{ $driver->name }}</h1>
             <p class="text-sm text-gray-500">
