@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\EndorsementType;
 use App\Enums\PolicyStatus;
+use App\Enums\PolicyType;
 use App\Models\Endorsement;
 use App\Models\Policy;
 use App\Models\Vehicle;
@@ -24,17 +25,26 @@ class EndorsementService
      */
     
     public function request(Policy $policy, array $changes, string $reason): Endorsement
-{
+    {
     if ($policy->status !== PolicyStatus::Active) {
         throw new \RuntimeException('Only active policies can be endorsed.');
     }
+
+    
+    $type = $changes['policy_type'] ?? $policy->policy_type;
+
+    if (is_string($type)) {
+        $type = PolicyType::from($type);
+    }
+
+    $changes['policy_type'] = $type;
 
     $endorsement = DB::transaction(function () use ($policy, $changes, $reason) {
 
         // 1. Compute the new premium breakdown
         $newBreakdown = $this->calculator->calculate(
             $policy->vehicle,
-            $changes['policy_type'] ?? $policy->policy_type,
+            $changes['policy_type'],   // now guaranteed to be a PolicyType enum
             $changes['add_on_ids'] ?? $policy->addOns->pluck('id')->toArray(),
         );
 

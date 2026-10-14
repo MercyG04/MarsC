@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -35,8 +36,8 @@ class Policy extends Model
     protected  function casts(): array 
        { return [
         'issued_at'             => 'date',
-        'start_date'            => 'immutable_date',
-        'end_date'              => 'immutable_date',
+        'start_date'            => Carbon::date(),
+        'end_date'              => Carbon::date(),
         'basic_premium'         => 'decimal:2',
         'training_levy'         => 'decimal:2',
         'phcf'                  => 'decimal:2',

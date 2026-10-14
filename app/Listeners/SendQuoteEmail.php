@@ -24,6 +24,13 @@ class SendQuoteEmail
      */
     public function handle(QuoteSent $event): void
     {
+
+        Log::info('SendQuoteEmail listener fired', [
+        'quote_id' => $event->quote->id,
+        'email'    => $event->quote->prospect_email,
+        'mailer'   => config('mail.default'),
+        'queue'    => config('queue.default'),
+    ]);
         $quote = $event->quote;
         if (! $quote->prospect_email) {
             Log::warning('Quote sent but no email on file', [
