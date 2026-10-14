@@ -129,12 +129,12 @@
             </div>
         </div>
 
-        {{-- ─── Valuation History ─── --}}
+        {{-- ─── Valuation History- --}}
         <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
                 <h2 class="text-sm font-semibold text-green-800">Valuation History</h2>
                 @if ($vehicle->status === \App\Enums\VehicleStatus::PendingValuation)
-                    <a href="{{ route('valuations.index', $vehicle) }}"
+                    <a href="{{ route('valuations.create', $vehicle) }}"
                         class="text-xs px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium">
                         + Record Valuation
                     </a>

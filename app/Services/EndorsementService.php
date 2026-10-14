@@ -22,49 +22,54 @@ class EndorsementService
      *
      * @param  array  $changes  e.g. ['policy_type' => PolicyType::Comprehensive, 'add_on_ids' => [1,3]]
      */
+    
     public function request(Policy $policy, array $changes, string $reason): Endorsement
-    {
-        if ($policy->status !== PolicyStatus::Active) {
-            throw new \RuntimeException('Only active policies can be endorsed.');
-        }
-
-        return DB::transaction(function () use ($policy, $changes, $reason) {
-
-            // 1. Compute what the NEW premium would be under the proposed changes
-            $newBreakdown = $this->calculator->calculate(
-                $policy->vehicle,
-                $changes['policy_type'] ?? $policy->policy_type,
-                $changes['add_on_ids'] ?? $policy->addOns->pluck('id')->toArray(),
-            );
-
-            // 2. Compute the pro-rata adjustment
-            $adjustment = $this->calculateProRata(
-                (float) $policy->gross_premium,
-                (float) $newBreakdown['gross_premium'],
-                $policy->start_date,
-                $policy->end_date,
-            );
-
-            // 3. Create the endorsement record FIRST
-            $endorsement = Endorsement::create([
-                'policy_id'          => $policy->id,
-                'endorsement_number' => $this->nextNumber(),
-                'endorsement_type'   => $this->classifyChange($policy, $changes),
-                'changes'            => $this->describeChanges($policy, $changes),
-                'additional_premium' => $adjustment > 0 ? $adjustment : 0,
-                'refund_premium'     => $adjustment < 0 ? abs($adjustment) : 0,
-                'effective_date'     => now()->toDateString(),
-                'reason'             => $reason,
-                'created_by'         => Auth::id(),
-            ]);
-
-            // 4. Apply the changes to the policy itself
-            $this->applyChanges($policy, $changes, $newBreakdown, $adjustment);
-
-            return $endorsement;
-        });
+{
+    if ($policy->status !== PolicyStatus::Active) {
+        throw new \RuntimeException('Only active policies can be endorsed.');
     }
 
+    $endorsement = DB::transaction(function () use ($policy, $changes, $reason) {
+
+        // 1. Compute the new premium breakdown
+        $newBreakdown = $this->calculator->calculate(
+            $policy->vehicle,
+            $changes['policy_type'] ?? $policy->policy_type,
+            $changes['add_on_ids'] ?? $policy->addOns->pluck('id')->toArray(),
+        );
+
+        // 2. Pro-rata adjustment
+        $adjustment = $this->calculateProRata(
+            (float) $policy->gross_premium,
+            (float) $newBreakdown['gross_premium'],
+            $policy->start_date,
+            $policy->end_date,
+        );
+
+        // 3. Create the endorsement record
+        $endorsement = Endorsement::create([
+            'policy_id'          => $policy->id,
+            'endorsement_number' => $this->nextNumber(),
+            'endorsement_type'   => $this->classifyChange($policy, $changes),
+            'changes'            => $this->describeChanges($policy, $changes),
+            'additional_premium' => $adjustment > 0 ? $adjustment : 0,
+            'refund_premium'     => $adjustment < 0 ? abs($adjustment) : 0,
+            'effective_date'     => now()->toDateString(),
+            'reason'             => $reason,
+            'created_by'         => Auth::id(),
+        ]);
+
+        // 4. Apply the changes to the policy
+        $this->applyChanges($policy, $changes, $newBreakdown, $adjustment);
+
+        return $endorsement;
+    });
+
+    // 5. Fire the event AFTER the transaction commits
+    event(new \App\Events\PolicyEndorsed($endorsement));
+
+    return $endorsement;
+}
     /**
      * Compute the pro-rata adjustment for the remaining days of the policy term.
      */

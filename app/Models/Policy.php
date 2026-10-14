@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\AddOn;
 use App\Models\User;
 use App\Enums\PolicyCancellationStatus;
@@ -16,35 +17,21 @@ use App\Enums\PolicyStatus;
 use App\Enums\PaymentFrequency;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['policy_number',
-        'customer_id',
-        'vehicle_id',
-        'policy_type',
-        'status',
-        'issued_at',
-        'start_date',
-        'end_date',
-        'basic_premium',
-        'training_levy',
-        'phcf',
-        'stamp_duty',
-        'add_ons',
-        'gross_premium',
-        'sum_insured',
-        'deductible_amount',
-        'payment_frequency',
-        'certificate_isssued_at',
-        'premium_balance',
-        'cancellation_status',
-        'cancellation_requested_at',
-        'cancellation_effective_at',
-        'certificate_surrendered_at',
-        'refund_amount',
-        'cancellation_reason',
-        'cancelled_by',
-        'quote_id',])]
+#[Fillable(['policy_number','client_id',
+        'vehicle_id', 'policy_type',
+        'status', 'issued_at',
+        'start_date', 'end_date',
+        'basic_premium', 'training_levy',
+        'phcf', 'stamp_duty',
+        'add_ons','gross_premium',
+        'sum_insured','deductible_amount',
+        'payment_frequency', 'certificate_issued_at',
+        'premium_balance','cancellation_status',
+        'cancellation_requested_at', 'cancellation_effective_at',
+        'certificate_surrendered_at', 'refund_amount',
+        'cancellation_reason', 'cancelled_by','quote_id',])]
 class Policy extends Model
-{
+{ use SoftDeletes, HasFactory;
     protected  function casts(): array 
        { return [
         'issued_at'             => 'date',

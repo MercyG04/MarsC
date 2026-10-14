@@ -196,9 +196,9 @@
                 <div class="flex justify-between">
                     <dt class="text-gray-600">Premium Balance</dt>
                     <dd class="font-semibold
-                            @if($policy->premium_balance > 0) text-yellow-700
-                            @else text-green-700
-                            @endif">
+                                @if($policy->premium_balance > 0) text-yellow-700
+                                @else text-green-700
+                                @endif">
                         KES {{ number_format($policy->premium_balance, 2) }}
                         @if ($policy->premium_balance <= 0)
                             <span class="text-xs font-normal">(Fully paid)</span>
@@ -327,6 +327,12 @@
                     class="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium shadow-sm">
                     Cancel Policy
                 </a>
+                @if (auth()->user()->isAdmin() && $policy->endorsements->isNotEmpty())
+                    <a href="{{ route('policies.endorsements.show', [$policy, $policy->endorsements->last()]) }}"
+                        class="px-5 py-2 rounded-lg border border-purple-400 text-purple-700 hover:bg-purple-50 text-sm font-medium shadow-sm">
+                        View Latest Endorsement
+                    </a>
+                @endif
                 @if ($policy->status === \App\Enums\PolicyStatus::Active)
                     <a href="{{ route('claims.create', $policy) }}"
                         class="px-4 py-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium shadow-sm">

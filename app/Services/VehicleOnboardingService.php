@@ -96,7 +96,7 @@ class VehicleOnboardingService
     $vehicle->drivers()->create([
         'name'                => "{$client->first_name} {$client->last_name}",
         'national_id'         => $client->national_id,
-        'dl_number'           => 'PENDING',      // TODO: query NTSA for the owner's DL
+        'dl_number'           => 'pending',      // TODO: query NTSA for the owner's DL
         'dl_class'            => 'B',            // Personal cars use class B
         'date_of_birth'       => $client->date_of_birth,
         'driving_experience'  => $client->driving_experience,

@@ -128,6 +128,17 @@
             </h2>
             <p class="text-sm text-gray-700 whitespace-pre-line">{{ $endorsement->reason }}</p>
         </div>
+        @if (auth()->user()->isAdmin())
+            <div class="mt-6">
+                <form method="POST" action="{{ route('policies.endorsements.email', [$policy, $endorsement]) }}">
+                    @csrf
+                    <button type="submit"
+                        class="px-5 py-2.5 rounded-lg border border-purple-400 text-purple-700 hover:bg-purple-50 text-sm font-medium shadow-sm">
+                        Email Endorsement to Client
+                    </button>
+                </form>
+            </div>
+        @endif
 
         {{-- ─── Immutability notice ─── --}}
         <div class="mt-6 rounded-lg bg-lilac-50 border border-purple-200 p-4 text-xs text-gray-600">

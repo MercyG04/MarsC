@@ -67,7 +67,13 @@
             <dl class="text-sm space-y-2">
                 <div class="flex justify-between">
                     <dt class="text-gray-500">DL Number</dt>
-                    <dd class="font-mono text-gray-800">{{ $driver->dl_number }}</dd>
+                    <dd class="font-mono text-gray-800">
+                        @if (!$driver->dl_number || $driver->dl_number === 'PENDING')
+                            <span class="text-yellow-700 italic text-sm">Not on file</span>
+                        @else
+                            {{ $driver->dl_number }}
+                        @endif
+                    </dd>
                 </div>
                 <div class="flex justify-between">
                     <dt class="text-gray-500">Class</dt>
