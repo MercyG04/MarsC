@@ -1,58 +1,104 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# MarsC Insurance Platform
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A motor insurance management system built with **Laravel 13**, **Blade**, and **Tailwind CSS v4**.
 
-## About Laravel
+MarsC models the full lifecycle of a motor insurance policy in Kenya — from client onboarding through claims processing. It's a demonstration project, not a production system, but it encodes real Kenyan insurance rules and shows how they map to code.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## What It Does
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+**Client onboarding** — captures identity, contact, and consent data. Includes IPRS and NTSA verification buttons that call a mock external service and auto-fill the form.
 
-## Learning Laravel
+**Vehicle onboarding** — registers vehicles with NTSA TIMS verification. Vehicle identity fields (registration, chassis, logbook, declared value) are immutable after creation.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**Vehicle drivers** — supports multiple drivers per vehicle with NTSA licence class validation and a single-primary-driver invariant.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**Valuations** — underwriters record the assessor's findings (Actual Cash Value and Forced Sale Value). A vehicle is eligible for a policy once valued.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+**Premium calculation** — three pricing models:
+- **Comprehensive** — 4% of the vehicle's ACV
+- **TPO (Third Party Only)** — fixed floor of KES 5,000
+- **TPTF (Third Party Fire & Theft)** — floor + 1% of ACV
 
-## Agentic Development
+All types apply a risk multiplier (1.0 private, 1.4 commercial, 1.8 PSV), plus statutory levies (Training Levy 0.2%, PHCF 0.25%, Stamp Duty KES 40), plus optional add-ons.
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+**Policy issuance** — creates the policy, snapshots add-on prices, flips the vehicle to Insured, and sends an email notification.
 
-```bash
-composer require laravel/boost --dev
+**Endorsements** — mid-term changes (cover type, add-ons, drivers) with pro-rata premium adjustments. The policy number stays the same; the change is recorded as a formal endorsement.
 
-php artisan boost:install
-```
+**Cancellations** — two-step IRA-compliant workflow: cover stops, then the certificate must be surrendered within 7 days. Refunds are calculated on a short-period basis.
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+**Quotations** — priced offers for prospects who aren't yet clients. Reuses the same premium calculator. Sends an email when marked as sent.
 
-## Contributing
+**Claims** — full state machine: `Submitted → Acknowledged → UnderReview → Assessed → Approved → Paid`. Requires specific documents before review. Fraud rejections require documented evidence.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**Role-based access control** — five roles (Admin, Underwriter, Claims Officer, Agent) with route-level enforcement.
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Tech Stack
 
-## Security Vulnerabilities
+- **Laravel 13** (PHP 8.3+)
+- **Blade** — server-rendered views
+- **Tailwind CSS v4**
+- **Pest** — testing framework
+- **Laravel Breeze** — authentication
+- **SQLite** — local database
+- **Express (Node.js)** — mock server for IPRS and NTSA
+- **GitHub Actions** — CI pipeline
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+Architecture
+The app follows a layered architecture:
+Controllers → FormRequests → Services → Models → Database
+
+Controllers are thin — they validate, delegate, and redirect.
+
+FormRequests handle validation and authorization.
+
+Services own the business logic (premium calculation, KYC, issuance, endorsements, claims).
+
+Models own the domain rules — casts, relationships, immutability guards, status transitions.
+
+Enums define every fixed set of values (statuses, types, roles).
+
+What's Done
+✅ Client onboarding with IPRS + NTSA verification
+✅ Vehicle onboarding with NTSA TIMS verification
+✅ Vehicle driver management with DL class validation
+✅ Valuation recording with vehicle status transition
+✅ Premium calculator for all three policy types
+✅ Policy issuance with add-on price snapshots
+✅ Endorsements with pro-rata adjustments
+✅ Cancellations with certificate surrender workflow
+✅ Quotations with email notification
+✅ Claims state machine with document guard
+✅ Role-based access control
+✅ Event-driven email notifications
+✅ GitLab Issues tracking
+
+What's Not Done
+These are deliberate MVP gaps, not oversights. Each is a documented next step.
+
+Quote → policy conversion — the pieces exist (a policies.quote_id column, an markAsAccepted() method), but the multi-step flow that carries the quote ID across onboarding isn't wired. This was left unwired rather than shipped half-working.
+
+Valuation PDF upload — valuations are captured via form input. The assessor's signed report isn't uploaded.
+
+Authorization letter for valuation — the templated letter that clients take to the assessor isn't generated. In production, it would be a PDF emailed to the client.
+
+Certificate PDF generation — policies record when a certificate was issued, but the document isn't generated.
+DL number on the client record — personal vehicles auto-create the owner as a driver with a placeholder DL. In production, the DL would be captured during NTSA verification and stored on the client.
+
+Claims officer reassignment — the assign-to flow works but there's no way to reassign a claim if the officer is unavailable.
+
+Claim notification emails — claims transitions don't trigger emails yet.
+
+Payment processing — premium balances are tracked but not collected. No M-Pesa integration.
+
+User provisioning — users are seeded, not created through an admin panel.
+
+Full audit logging — timestamps exist on transitions, but there's no actor + IP + payload audit trail.
