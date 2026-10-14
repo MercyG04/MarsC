@@ -49,4 +49,7 @@ jobs:
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
+        MAIL_MAILER: array
+        QUEUE_CONNECTION: sync
+        VERIFICATION_URL: http://localhost:4500
       run: php artisan test
