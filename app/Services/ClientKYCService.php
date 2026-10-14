@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\Client;
 use Illuminate\Support\Facades\DB;
 
-class ClientKycService
+class ClientKYCService
 {
     public function __construct(
         protected VerificationService $verification,

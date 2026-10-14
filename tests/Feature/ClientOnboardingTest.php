@@ -76,7 +76,7 @@ it('enriches client data from the verification service', function () {
         ]),
     ]);
 
-    $service = app(\App\Services\ClientKycService::class);
+    $service = app(\App\Services\ClientKYCService::class);
 
     $client = $service->onboard([
         'first_name'         => 'IGNORED',   // will be overwritten by IPRS
