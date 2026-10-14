@@ -20,11 +20,22 @@ jobs:
         extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, sqlite3, bcmath
         coverage: none
 
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.example', '.env');"
 
     - name: Install Dependencies
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+    - name: Install Node Dependencies
+      run: npm ci
+
+    - name: Build Assets
+      run: npm run build
 
     - name: Generate key
       run: php artisan key:generate
@@ -39,6 +50,7 @@ jobs:
 
     - name: Run Migrations
       env:
+        APP_ENV: testing
         DB_CONNECTION: sqlite
         DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
         MAIL_MAILER: array
@@ -47,9 +59,17 @@ jobs:
 
     - name: Execute tests
       env:
+        APP_ENV: testing
         DB_CONNECTION: sqlite
         DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
         MAIL_MAILER: array
         QUEUE_CONNECTION: sync
         VERIFICATION_URL: http://localhost:4500
       run: php artisan test
+
+    - name: Show test log
+      if: always()
+      run: |
+        if [ -f storage/logs/laravel.log ]; then
+          tail -200 storage/logs/laravel.log
+        fi
