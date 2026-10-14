@@ -61,7 +61,7 @@ it('auto-sets consent_given_at when consent is given', function () {
 it('enriches client data from the verification service', function () {
     // Fake the mock server response
     Http::fake([
-        '*/verify' => Http::response([
+        '*' => Http::response([
             'ok'   => true,
             'source' => 'IPRS',
             'data' => [
